@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Faizan Portal - Premium Experience</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:ital@0;1&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root {
+      --bg-space: #050b14;
+      --card-surface: rgba(15, 23, 42, 0.45);
+      --card-surface-active: rgba(52, 211, 153, 0.08);
+      --border-premium: rgba(255, 255, 255, 0.06);
+      --accent-neon: #34d399; /* Mint Emerald */
+      --accent-gold: #f59e0b;  /* Amber Gold */
+      --text-main: #ffffff;
+      --text-secondary: #94a3b8;
+      --sky-gradient: linear-gradient(180deg, #022c22 0%, #0f172a 70%, #050b14 100%);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background: var(--bg-space);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 16px 120px 16px;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: var(--sky-gradient);
+      z-index: -2;
+      transition: background 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .ambient-geometry-mask {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      opacity: 0.02;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60"><path d="M30 0 L60 30 L30 60 L0 30 Z" fill="none" stroke="white" stroke-width="1"/></svg>');
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .container-wrapper {
+      width: 100%;
+      max-width: 430px;
+      animation: panelFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+/* Header styling */
+.journey-header-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 10px 10px 10px;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  letter-spacing: 0.1em;
+}
+
+/* Header alignment */
+.header-right {
+  display: flex;
+  gap: 15px;      /* Gap between columns */
+  width: 160px;   /* FIXED width container */
+  justify-content: flex-end;
+}
+
+/* Row alignment */
+.row-right {
+  display: flex;
+  gap: 15px;      /* Matches header gap */
+  width: 160px;   /* FIXED width container - must match .header-right */
+  justify-content: flex-end;
+}
+
+/* Time value alignment */
+.t-val {
+  font-size: 0.95rem;
+  font-weight: 600;
+  width: 70px;    /* Fixed width for each time cell */
+  text-align: right;
+  display: flex;
+  flex-direction: column; /* Allows multi-line text to align to the right */
+  justify-content: center;
+  align-items: flex-end;
+}
+
+/* Row styling */
+.journey-step-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 8px;
+}
+
+
+
+
+    .view-panel { display: none; }
+    .view-panel.active-view { display: block; }
+
+    /* ─── 💎 PREMIUM GLASS PANELS ─── */
+    .glass-panel {
+      background: var(--card-surface);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid var(--border-premium);
+      border-radius: 28px;
+      padding: 24px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      margin-bottom: 20px;
+    }
+
+    .section-title-meta {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--text-secondary);
+      margin: 24px 0 12px 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* ─── ⏳ HERO JOURNEY COUNTDOWN ─── */
+    .journey-hero-container {
+      position: relative;
+      background: linear-gradient(145deg, rgba(52, 211, 153, 0.12) 0%, rgba(15, 23, 42, 0.6) 100%);
+      border: 1px solid rgba(52, 211, 153, 0.25);
+      box-shadow: 0 0 30px rgba(52, 211, 153, 0.1), inset 0 1px 1px rgba(255,255,255,0.1);
+      overflow: hidden;
+      padding: 28px 24px;
+      text-align: center;
+    }
+
+    .hero-heading-row { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.2em; color: var(--accent-neon); margin-bottom: 6px; }
+    .hero-time-display { font-size: 2.4rem; font-weight: 800; letter-spacing: -0.03em; text-shadow: 0 4px 12px rgba(0,0,0,0.3); color: #ffffff; }
+    .hero-duration-countdown { font-size: 1.05rem; font-weight: 500; color: var(--text-secondary); margin-top: 4px; }
+
+    /* ─── 📋 TIMELINE TRACK ENGINE ─── */
+    .timeline-stack { display: flex; flex-direction: column; gap: 4px; }
+    
+    .journey-step-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 8px;
+      border-radius: 16px;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+    
+    .journey-step-row:not(:last-child)::after {
+      content: ''; position: absolute; bottom: 0; left: 44px; right: 8px; height: 1px; background: rgba(255,255,255,0.03);
+    }
+
+    .journey-step-row.step-active {
+      background: var(--card-surface-active);
+      border: 1px solid rgba(52, 211, 153, 0.2);
+      padding-left: 14px; padding-right: 14px;
+    }
+    .journey-step-row.step-active::after { display: none; }
+
+    .step-left-block { display: flex; align-items: center; gap: 16px; }
+    .step-left-block i { font-size: 1.15rem; color: var(--text-secondary); width: 20px; text-align: center; }
+    .journey-step-row.step-active .step-left-block i { color: var(--accent-neon); filter: drop-shadow(0 0 8px var(--accent-neon)); }
+    
+    .step-name-group { display: flex; flex-direction: column; }
+    .step-name-group .step-title { font-size: 1.05rem; font-weight: 600; }
+    .journey-step-row.step-active .step-title { font-weight: 700; color: var(--accent-neon); }
+
+    .step-right-block { display: flex; align-items: center; gap: 24px; text-align: right; }
+    .step-time-cell { display: flex; flex-direction: column; min-width: 65px; }
+    .step-time-cell .cell-label { font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-secondary); margin-bottom: 2px; }
+    .step-time-cell .cell-val { font-size: 1rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+    .journey-step-row.step-active .step-time-cell .cell-val.highlight { color: var(--accent-neon); font-weight: 700; }
+
+    .meta-top-strip { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; font-size: 0.88rem; font-weight: 500; }
+    .meta-top-strip .location-tag { background: rgba(255,255,255,0.04); padding: 4px 10px; border-radius: 100px; border: 1px solid rgba(255,255,255,0.03); font-size: 0.78rem; display: flex; align-items: center; gap: 6px; color: var(--text-secondary); }
+
+    .quran-scripture-card {
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.2) 0%, rgba(5, 11, 20, 0.4) 100%);
+      text-align: center;
+      padding: 24px;
+    }
+    .quran-scripture-card .arabic-verse {
+      font-family: 'Amiri', serif;
+      font-size: 1.45rem;
+      line-height: 2.2;
+      color: var(--accent-gold);
+      margin-bottom: 8px;
+      direction: rtl;
+    }
+    .quran-scripture-card .english-translation { font-size: 0.78rem; color: var(--text-secondary); line-height: 1.4; font-style: italic; }
+
+    .consistency-flex-box { display: flex; align-items: center; gap: 20px; }
+    .consistency-checklist-stack { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+
+    /* ─── 📅 TIMETABLE MONTH CALENDAR ─── */
+    .calendar-card { padding: 12px; margin-bottom: 12px; }
+    .calendar-header-banner { text-align: center; font-size: 1.15rem; font-weight: 700; color: #ffffff; padding: 4px 0 16px 0; letter-spacing: -0.01em; }
+    .calendar-weekdays-row { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; margin-bottom: 12px; }
+    .calendar-weekdays-row span { font-size: 0.68rem; font-weight: 700; color: var(--accent-neon); text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.7; }
+    .calendar-days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+    
+    .cal-cell {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      border-radius: 14px;
+      aspect-ratio: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    .cal-cell .g-num { font-size: 1.05rem; font-weight: 600; color: #ffffff; }
+    .cal-cell .h-num { font-size: 0.58rem; color: var(--text-secondary); margin-top: 1px; }
+    
+    .cal-cell.empty-pad { background: transparent; border: none; pointer-events: none; }
+    .cal-cell.is-today { background: rgba(52, 211, 153, 0.1); border: 1px solid rgba(52, 211, 153, 0.3); }
+    .cal-cell.is-today .g-num { color: var(--accent-neon); }
+    .cal-cell.is-selected { background: var(--accent-gold) !important; border-color: var(--accent-gold) !important; transform: scale(1.05); box-shadow: 0 10px 20px rgba(251, 191, 36, 0.2); }
+    .cal-cell.is-selected .g-num { color: #050b14 !important; font-weight: 700; }
+    .cal-cell.is-selected .h-num { color: rgba(5, 11, 20, 0.7) !important; font-weight: 700; }
+
+    .schedule-inspector-card { background: linear-gradient(180deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 24px; padding: 20px; }
+    .schedule-inspector-card .inspect-date-title { font-size: 1rem; font-weight: 700; color: var(--accent-gold); margin-bottom: 14px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+    .inspect-row-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.03); }
+    .inspect-row-item:last-child { border-bottom: none; }
+    .inspect-row-item .left-lbl { font-size: 0.92rem; font-weight: 600; display: flex; align-items: center; gap: 10px; color: #e2e8f0; }
+    .inspect-row-item .right-vals { display: flex; gap: 16px; font-variant-numeric: tabular-nums; }
+    .inspect-row-item .val-block { display: flex; flex-direction: column; align-items: flex-end; min-width: 65px; }
+    .inspect-row-item .val-lbl { font-size: 0.6rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 1px; font-weight: 500; }
+    .inspect-row-item .val-time { font-size: 0.95rem; font-weight: 700; }
+
+    /* ─── ⚙️ MATCHED PLATFORM CONFIGURATIONS LAYOUTS (PROPOSAL REWRITE) ─── */
+    .settings-premium-box {
+      background: rgba(30, 41, 59, 0.25);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 24px;
+      padding: 12px 18px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+    
+    .setting-row-item { 
+      display: flex; 
+      align-items: center; 
+      justify-content: space-between; 
+      padding: 18px 2px; 
+    }
+    .setting-row-item:not(:last-child) { 
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04); 
+    }
+
+    .switch-input { display: none; }
+    .switch-label { 
+      width: 44px; 
+      height: 24px; 
+      background: #242b35; 
+      display: inline-block; 
+      border-radius: 100px; 
+      position: relative; 
+      cursor: pointer; 
+      transition: background 0.25s ease, box-shadow 0.25s ease; 
+    }
+    .switch-label::after { 
+      content: ''; 
+      position: absolute; 
+      top: 2px; left: 2px; 
+      width: 20px; height: 20px; 
+      background: #ffffff; 
+      border-radius: 50%; 
+      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1); 
+    }
+    
+    /* 🎯 TARGET SWITCH STATE A: Mint Emerald for standard UI parameters */
+    #toggle-24h:checked + .switch-label { 
+      background: #34d399; 
+      box-shadow: 0 0 10px rgba(52, 211, 153, 0.35); 
+    }
+    
+    /* 🎯 TARGET SWITCH STATE B: Warm Amber Gold for system page overrides layout preferences */
+    #toggle-staging:checked + .switch-label { 
+      background: #f59e0b; 
+      box-shadow: 0 0 10px rgba(245, 158, 11, 0.4); 
+    }
+    
+    .switch-input:checked + .switch-label::after { 
+      transform: translateX(20px); 
+    }
+
+    /* ─── ⚓ FLOATING PREMIUM TAB DOCK BAR ─── */
+    .fixed-floating-dock {
+      position: fixed;
+      bottom: 24px; left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - 32px);
+      max-width: 390px;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(30px);
+      -webkit-backdrop-filter: blur(30px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 24px;
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 8px;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+      z-index: 1000;
+    }
+    
+    .nav-tab {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.68rem;
+      font-weight: 600;
+      gap: 5px;
+      padding: 6px 12px;
+      transition: all 0.25s ease;
+      cursor: pointer;
+      border-radius: 16px;
+    }
+    .nav-tab i { font-size: 1.2rem; }
+    .nav-tab.active-tab { color: var(--accent-neon); }
+    .nav-tab.active-tab i { transform: scale(1.1) translateY(-2px); filter: drop-shadow(0 0 10px rgba(52,211,153,0.4)); }
+
+    .checkbox-item { display: flex; align-items: center; gap: 12px; cursor: pointer; font-size: 0.92rem; color: var(--text-secondary); user-select: none; padding: 4px 2px; }
+    .checkbox-item input { display: none; }
+    .custom-indicator { width: 20px; height: 20px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.15); display: inline-block; position: relative; transition: all 0.2s; background: rgba(0,0,0,0.15); }
+    .checkbox-item input:checked + .custom-indicator { background: var(--accent-neon); border-color: var(--accent-neon); box-shadow: 0 0 10px rgba(52, 211, 153, 0.4); }
+    .checkbox-item input:checked + .custom-indicator::after { content: '\f00c'; font-family: 'Font Awesome 6 Free'; font-weight: 900; font-size: 0.65rem; color: #050b14; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+    .checkbox-item input:checked ~ span { color: var(--text-main); font-weight: 600; }
+
+    @keyframes panelFadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body data-user-key="<?!= serverAssignedKey ?>">
+
+<div id="loader-overlay" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg-space); z-index: 9999; display: flex; align-items: center; justify-content: center; color: var(--accent-neon);">
+  <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
+</div>
+
+  <div class="ambient-geometry-mask"></div>
+
+  <div class="container-wrapper">
+    
+    <div id="view-home" class="view-panel active-view">
+      
+      <div class="meta-top-strip">
+        <div class="location-tag"><i class="fa-solid fa-location-dot"></i> Leeds, UK</div>
+        <span id="hijri-label" style="color: var(--accent-gold); font-weight: 600; font-size: 0.85rem;">Loading Hijri...</span>
+      </div>
+
+      <div class="glass-panel journey-hero-container">
+        <div class="hero-heading-row" id="hero-j-name">Calculated Jamat</div>
+        <div class="hero-time-display" id="hero-j-time">--:--</div>
+        <div class="hero-duration-countdown" id="hero-j-countdown">Connecting to database...</div>
+      </div>
+
+      <div class="section-title-meta"><i class="fa-solid fa-route"></i> Today's Prayer Journey</div>
+      <div class="glass-panel" style="padding: 10px 16px;">
+        <div id="timeline-container" class="timeline-stack"></div>
+      </div>
+
+      <div class="section-title-meta"><i class="fa-solid fa-compass"></i> Spiritual Insights</div>
+      <div class="glass-panel aurora-card" style="padding: 20px;">
+        <div class="fasting-flex">
+          <div class="fasting-meta">
+            <h4 id="insights-title-node" style="font-weight:700; color:var(--accent-gold); display:flex; align-items:center; gap:8px;">Syncing...</h4>
+            <p id="insights-desc-node" style="font-size:0.82rem; color:var(--text-secondary); margin-top:6px; line-height:1.4;">Evaluating coordinates.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-panel quran-scripture-card">
+        <div class="arabic-verse">وَأَقِيمُوا الصَّلَاةَ وَآتُوا الزَّكَاةَ وَارْكَعُوا مَعَ الرَّاكِعِينَ</div>
+        <div class="english-translation">"And establish prayer and give zakah and bow with those who bow in worship." (2:43)</div>
+      </div>
+
+    </div>
+
+    <div id="view-timetable" class="view-panel">
+      <div class="section-title-meta"><i class="fa-solid fa-calendar-alt"></i> Interactive Calendar</div>
+      <div class="glass-panel calendar-card">
+        <div class="calendar-header-banner" id="calendar-month-year-lbl">May 2026</div>
+        <div class="calendar-weekdays-row">
+          <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+        </div>
+        <div class="calendar-days-grid" id="calendar-days-root"></div>
+      </div>
+
+      <div class="section-title-meta"><i class="fa-solid fa-list-check"></i> Salah Schedule Details</div>
+      <div class="glass-panel schedule-inspector-card" id="schedule-inspector-panel" style="background: rgba(15, 23, 42, 0.25); border-radius: 28px;">
+        <div class="inspect-date-title" id="inspect-date-lbl">
+          <i class="fa-solid fa-calendar-check"></i> Select a date above
+        </div>
+        <div id="inspect-rows-root" class="timeline-stack"></div>
+      </div>
+    </div>
+
+    <div id="view-settings" class="view-panel">
+      <div class="section-title-meta" style="color: #ffffff; font-weight: 700; font-size: 1.15rem; text-transform: none; letter-spacing: -0.01em; margin-bottom: 16px;"><i class="fa-solid fa-sliders" style="font-size: 1.1rem; color: var(--accent-neon); margin-right: 2px;"></i> App Configuration & Display</div>
+      <div class="settings-premium-box">
+        <div id="cache-status-node" style="font-size: 0.7rem; color: var(--text-secondary); text-align: center; margin-top: 15px; opacity: 0.7;">
+    Syncing status...
+  </div>
+      <div class="setting-row-item" style="margin-top: 20px; border-top: 1px solid rgba(255, 255, 255, 0.06);">
+  <div class="step-left-block">
+    <i class="fa-solid fa-sync" style="color: var(--accent-neon);"></i>
+    <div class="title-group">
+      <div class="step-title" style="font-size: 0.95rem; font-weight: 700; color: #ffffff;">Force Refresh Data</div>
+      <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px;">Clear cache and re-fetch from source</div>
+    </div>
+  </div>
+  <button onclick="forceRefreshData(event)" style="background: rgba(52, 211, 153, 0.1); border: 1px solid var(--accent-neon); color: var(--accent-neon); padding: 8px 16px; border-radius: 12px; cursor: pointer; font-weight: 600;">Refresh</button>
+</div>  
+
+  
+
+        <div class="setting-row-item">
+          <div class="step-left-block">
+            <i class="fa-solid fa-clock" style="color: var(--accent-neon);"></i>
+            <div class="title-group">
+              <div class="step-title" style="font-size: 0.95rem; font-weight: 700; color: #ffffff;">24-Hour Format</div>
+              <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px; font-weight: 400; letter-spacing: 0;">Display calculations using a 24-hour clock log</div>
+            </div>
+          </div>
+          <div>
+            <input type="checkbox" id="toggle-24h" class="switch-input">
+            <label for="toggle-24h" class="switch-label"></label>
+          </div>
+        </div>
+
+        <div class="setting-row-item">
+          <div class="step-left-block">
+            <i class="fa-solid fa-house-laptop" style="color: var(--accent-gold);"></i>
+            <div class="title-group">
+              <div class="step-title" style="font-size: 0.95rem; font-weight: 700; color: #ffffff;">Set Test Page as Default</div>
+              <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px; font-weight: 400; letter-spacing: 0;">Turn off to drop back to the standard live layout</div>
+            </div>
+          </div>
+          <div>
+            <input type="checkbox" id="toggle-staging" class="switch-input">
+            <label for="toggle-staging" class="switch-label"></label>
+          </div>
+        </div> 
+
+      </div>
+      <div style="font-size:0.75rem; color:var(--text-secondary); text-align:center; margin-top:28px; font-family:monospace; font-weight: 500; opacity: 0.45; letter-spacing: 0.02em;">Identity: <span id="client-user-id-node">default-user</span></div>
+    </div>
+
+  </div>
+
+  <div class="fixed-floating-dock">
+    <div class="nav-tab active-tab" onclick="switchActiveTabLayer('home')"><i class="fa-solid fa-compass"></i>Home</div>
+    <div class="nav-tab" onclick="switchActiveTabLayer('timetable')"><i class="fa-solid fa-calendar-alt"></i>Timetable</div>
+    <div class="nav-tab" onclick="switchActiveTabLayer('settings')"><i class="fa-solid fa-sliders"></i>Settings</div>
+  </div>
+
+  <script>
+    var globalRawMasterMatrix = null;
+    var globalDataset = null;
+    var activeServerAssignedKey = "default-user"; 
+    var isUserConfig24h = false; 
+    var serverSettingsCache = null; 
+
+    window.addEventListener('DOMContentLoaded', () => {
+      var parsedKey = document.body.getAttribute("data-user-key");
+      if (parsedKey && parsedKey.trim() !== "" && parsedKey.indexOf("serverAssignedKey") === -1) {
+        activeServerAssignedKey = parsedKey.trim();
+      }
+      document.getElementById("client-user-id-node").innerText = activeServerAssignedKey;
+      
+      syncDatabaseContextPayload();
+      
+    });
+
+    function switchActiveTabLayer(targetKey) {
+      document.querySelectorAll('.view-panel').forEach(view => view.classList.remove('active-view'));
+      document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active-tab'));
+      document.getElementById(`view-${targetKey}`).classList.add('active-view');
+      var tabIdx = ['home', 'timetable', 'settings'].indexOf(targetKey);
+      document.querySelectorAll('.fixed-floating-dock .nav-tab')[tabIdx].classList.add('active-tab');
+
+      if (targetKey === 'settings') {
+        wireUpSettingsListeners();
+      }
+    }
+
+  function syncDatabaseContextPayload() {
+  // 1. Show the loader immediately if it exists
+  var loader = document.getElementById('loader-overlay');
+  if (loader) loader.style.display = 'flex';
+
+  google.script.run
+    .withSuccessHandler(function(response) {
+      // 2. Hide loader and reset insight title on return
+      if (loader) loader.style.display = 'none';
+      var insightsTitle = document.getElementById("insights-title-node");
+      if(insightsTitle) insightsTitle.innerText = "Spiritual Insights"; 
+
+      if (response && response.success) {
+        document.getElementById("hijri-label").innerHTML = `<i class="fa-solid fa-moon"></i> ${response.hijri}`;
+        
+        globalRawMasterMatrix = response.data;
+        serverSettingsCache = response.settings; 
+        
+        if (serverSettingsCache) {
+          isUserConfig24h = (serverSettingsCache.is24h === true || serverSettingsCache.is24h === "true" || serverSettingsCache.is24h === "TRUE");
+        }
+        
+        wireUpSettingsListeners();
+        renderDynamicTimelineRows(globalRawMasterMatrix);
+        generateMonthlyCalendar(globalRawMasterMatrix, response.hijri);
+        evaluateSpiritualInsightsDrawer(response.hijri, globalRawMasterMatrix);
+
+        var cacheNode = document.getElementById("cache-status-node");
+        if (cacheNode) {
+          cacheNode.innerText = "Last data sync: " + (response.lastUpdated || "Just now");
+        }
+      } else {
+        console.error("Server Error:", response.error);
+        if(insightsTitle) insightsTitle.innerText = "Sync Failed";
+      }
+    })
+    .withFailureHandler(function(err) {
+      // 3. Ensure loader is hidden on failure to avoid a permanent white screen
+      if (loader) loader.style.display = 'none';
+      console.error("Script Failure:", err);
+      var insightsTitle = document.getElementById("insights-title-node");
+      if(insightsTitle) insightsTitle.innerText = "Connection Error";
+    })
+    .getInitialData();
+}
+
+
+    function formatTimeLabelString(timeStr) {
+      if (!timeStr || timeStr === "--:--" || timeStr === "Shorouk") return timeStr;
+      if (isUserConfig24h) return timeStr; 
+      
+      try {
+        var parts = timeStr.split(':').map(Number);
+        var hours = parts[0];
+        var mins = parts[1].toString().padStart(2, '0');
+        var period = hours >= 12 ? " PM" : " AM";
+        hours = hours % 12 || 12;
+        return hours + ":" + mins + period;
+      } catch(e) { return timeStr; }
+    }
+
+    function generateMonthlyCalendar(matrix, currentHijriString) {
+      var rootElement = document.getElementById("calendar-days-root");
+      if (!rootElement || !matrix || matrix.length < 2) return;
+
+      var now = new Date(); var currentYear = now.getFullYear(); var currentMonth = now.getMonth(); 
+      var todayDateStr = currentYear + "-" + String(currentMonth + 1).padStart(2, '0') + "-" + String(now.getDate()).padStart(2, '0');
+
+      var monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+      document.getElementById("calendar-month-year-lbl").innerText = monthNames[currentMonth] + " " + currentYear;
+
+      var hijriMonthLabel = "Dhul Hijjah";
+      try {
+        var parts = currentHijriString.trim().split(" ");
+        if (parts.length > 1) hijriMonthLabel = parts.slice(1, parts.length - 1).join(" ");
+      } catch(e) {}
+
+      var firstDayIndex = new Date(currentYear, currentMonth, 1).getDay();
+      var totalDaysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+      var rowMap = {};
+      for (var i = 1; i < matrix.length; i++) {
+        var rawRowDate = matrix[i][0].toString().trim();
+        if (rawRowDate) rowMap[rawRowDate] = matrix[i];
+      }
+
+      var htmlMarkup = "";
+      for (var p = 0; p < firstDayIndex; p++) { htmlMarkup += `<div class="cal-cell empty-pad"></div>`; }
+
+      for (var d = 1; d <= totalDaysInMonth; d++) {
+        var dateConstructString = currentYear + "-" + String(currentMonth + 1).padStart(2, '0') + "-" + String(d).padStart(2, '0');
+        var isToday = (dateConstructString === todayDateStr);
+        
+        var calculatedHijriDay = 1;
+        if (isToday) {
+          calculatedHijriDay = parseInt(currentHijriString.split(" ")[0], 10) || 1;
+        } else {
+          var todayDayNum = now.getDate();
+          var todayHijriNum = parseInt(currentHijriString.split(" ")[0], 10) || 1;
+          calculatedHijriDay = todayHijriNum + (d - todayDayNum);
+          if (calculatedHijriDay <= 0) calculatedHijriDay = 30 + calculatedHijriDay;
+          if (calculatedHijriDay > 30) calculatedHijriDay = calculatedHijriDay % 30 || 1;
+        }
+
+        htmlMarkup += `
+          <div class="cal-cell ${isToday ? 'is-today' : ''}" id="cal-day-${d}" data-date="${dateConstructString}" data-hijri="${calculatedHijriDay} ${hijriMonthLabel}" onclick="inspectTargetCalendarDay(${d})">
+            <span class="g-num">${d}</span>
+            <span class="h-num">${calculatedHijriDay}</span>
+          </div>`;
+      }
+      rootElement.innerHTML = htmlMarkup;
+      inspectTargetCalendarDay(now.getDate());
+    }
+
+    function inspectTargetCalendarDay(dayNumber) {
+  document.querySelectorAll('.cal-cell').forEach(cell => cell.classList.remove('is-selected'));
+  var targetElement = document.getElementById(`cal-day-${dayNumber}`);
+  if (!targetElement) return;
+
+  targetElement.classList.add('is-selected');
+  var dateStr = targetElement.getAttribute("data-date");
+  var hijriStr = targetElement.getAttribute("data-hijri");
+  
+  var lblNode = document.getElementById("inspect-date-lbl");
+  var rowsRoot = document.getElementById("inspect-rows-root");
+
+  var options = { weekday: 'long', month: 'short', day: 'numeric' };
+  var cleanGregorian = new Date(dateStr).toLocaleDateString('en-US', options);
+  lblNode.innerHTML = `<i class="fa-solid fa-calendar-check" style="color:var(--accent-gold);"></i> ${cleanGregorian} | <span style="color:var(--accent-neon); font-size:0.8rem;">${hijriStr}</span>`;
+
+  var targetRow = globalRawMasterMatrix ? globalRawMasterMatrix.find(r => r[0].toString().trim() === dateStr.trim()) : null;
+  if (!targetRow) {
+    rowsRoot.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-secondary); font-size:0.85rem;">No timetable entry.</div>`;
+    return;
+  }
+
+  var scheduleArray = [
+    { label: "Fajr", icon: "fa-cloud-moon", start: targetRow[1], jamat: targetRow[6] },
+    { label: "Sunrise", icon: "fa-sun", start: targetRow[2], jamat: "Shorouk" },
+    { label: "Dhuhr", icon: "fa-cloud-sun", start: targetRow[3], jamat: targetRow[7] },
+    { label: "Asr", icon: "fa-cloud-sun-rain", start: targetRow[4], jamat: targetRow[8] },
+    { label: "Maghrib", icon: "fa-cloud-showers-heavy", start: targetRow[9], jamat: targetRow[9] },
+    { label: "Isha", icon: "fa-moon", start: targetRow[5], jamat: targetRow[10] }
+  ];
+
+  // 1. Add the same header row as the Home page
+  var html = `
+    <div class="journey-header-row">
+      <span></span>
+      <div class="header-right">
+        <span>Start</span>
+        <span>Iqama</span>
+      </div>
+    </div>`;
+
+  // 2. Build rows with aligned columns
+  scheduleArray.forEach(item => {
+    var isSunrise = (item.label === "Sunrise");
+    html += `
+      <div class="journey-step-row">
+        <div class="step-left-block">
+          <i class="fa-solid ${item.icon}"></i>
+          <span class="step-title" style="font-size:0.95rem;">${item.label}</span>
+        </div>
+        <div class="row-right">
+          <span class="t-val">${formatTimeLabelString(item.start)}</span>
+          <span class="t-val" style="color:var(--accent-neon);">${isSunrise ? '--:--' : formatTimeLabelString(item.jamat)}</span>
+        </div>
+      </div>`;
+  });
+  rowsRoot.innerHTML = html;
+}
+
+    function wireUpSettingsListeners() {
+      var c24hCheckbox = document.getElementById("toggle-24h");
+      var stagingCheckbox = document.getElementById("toggle-staging");
+      if (!c24hCheckbox || !stagingCheckbox) return;
+
+      c24hCheckbox.removeEventListener("change", handle24hFlip);
+      stagingCheckbox.removeEventListener("change", handleStagingFlip);
+
+      stagingCheckbox.checked = true;
+      c24hCheckbox.checked = isUserConfig24h;
+
+      if (serverSettingsCache) {
+        c24hCheckbox.checked = (serverSettingsCache.is24h === true || serverSettingsCache.is24h === "true" || serverSettingsCache.is24h === "TRUE");
+        stagingCheckbox.checked = (serverSettingsCache.useStaging === true || serverSettingsCache.useStaging === "true" || serverSettingsCache.useStaging === "TRUE");
+        isUserConfig24h = c24hCheckbox.checked;
+      }
+
+      c24hCheckbox.addEventListener("change", handle24hFlip);
+      stagingCheckbox.addEventListener("change", handleStagingFlip);
+    }
+
+    function handle24hFlip(e) {
+      var isChecked = e.target.checked; isUserConfig24h = isChecked;
+      if (serverSettingsCache) serverSettingsCache.is24h = isChecked;
+      renderDynamicTimelineRows(globalRawMasterMatrix);
+      var activeSel = document.querySelector('.cal-cell.is-selected');
+      if (activeSel) inspectTargetCalendarDay(parseInt(activeSel.querySelector('.g-num').innerText, 10));
+      google.script.run.saveUserSettings(activeServerAssignedKey, { is24h: isChecked });
+    }
+
+    function handleStagingFlip(e) {
+      var isChecked = e.target.checked; if (serverSettingsCache) serverSettingsCache.useStaging = isChecked;
+      google.script.run.saveUserSettings(activeServerAssignedKey, { useStaging: isChecked });
+    }
+
+    function updateDynamicSkyTheme(prayerName) {
+      var root = document.documentElement;
+      var name = prayerName.toUpperCase();
+      if (name.includes("FAJR")) {
+        root.style.setProperty('--sky-gradient', 'linear-gradient(180deg, #1e1b4b 0%, #311042 50%, #050b14 100%)');
+      } else if (name.includes("ZUHR")) {
+        root.style.setProperty('--sky-gradient', 'linear-gradient(180deg, #064e3b 0%, #0f172a 70%, #050b14 100%)');
+      } else if (name.includes("ASR")) {
+        root.style.setProperty('--sky-gradient', 'linear-gradient(180deg, #134e4a 0%, #0f172a 70%, #050b14 100%)');
+      } else if (name.includes("MAGHRIB")) {
+        root.style.setProperty('--sky-gradient', 'linear-gradient(180deg, #701a75 0%, #4c1d95 40%, #050b14 100%)');
+      } else {
+        root.style.setProperty('--sky-gradient', 'linear-gradient(180deg, #020617 0%, #0f172a 70%, #050b14 100%)');
+      }
+    }
+
+    function evaluateSpiritualInsightsDrawer(hijriString, matrix) {
+      var now = new Date(); var dayOfWeek = now.getDay();
+      var titleNode = document.getElementById("insights-title-node");
+      var descNode = document.getElementById("insights-desc-node");
+
+      var todayStr = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, '0') + "-" + String(now.getDate()).padStart(2, '0');
+      var targetRow = matrix.find(r => r[0].toString().trim() === todayStr) || matrix[1];
+      var sehriTime = formatTimeLabelString(targetRow[1] || "--:--");
+      var iftarTime = formatTimeLabelString(targetRow[9] || "--:--");
+
+      var targetArafah = new Date(2026, 4, 26); 
+      var diffArafah = Math.ceil((targetArafah - now) / (1000 * 60 * 60 * 24));
+
+      if (diffArafah === 0) {
+        titleNode.innerHTML = `<i class="fa-solid fa-sun"></i> Day of Arafah`;
+        descNode.innerHTML = `Voluntary fasting today expiates sins of two years. <br>🕒 <b>Sehri:</b> ${sehriTime} | <b>Iftar:</b> ${iftarTime}`;
+      } else if (diffArafah > 0 && diffArafah <= 10) {
+        titleNode.innerHTML = `<i class="fa-solid fa-kaaba"></i> Sacred Dhul Hijjah`;
+        descNode.innerHTML = `Maximize prayers during the premium 10 days. <b>Day of Arafah</b> is in ${diffArafah} days.`;
+      } else if (dayOfWeek === 1 || dayOfWeek === 4) {
+        titleNode.innerHTML = `<i class="fa-solid fa-moon"></i> Sunnah Fasting Day`;
+        descNode.innerHTML = `Weekly voluntary fasting window open. <br>🕒 <b>Sehri:</b> ${sehriTime} | <b>Iftar:</b> ${iftarTime}`;
+      } else {
+        titleNode.innerHTML = `<i class="fa-solid fa-heart"></i> Spiritual Focus`;
+        descNode.innerHTML = `Keep your tongue moist with the constant remembrance of Allah today.`;
+      }
+    }
+
+ function renderDynamicTimelineRows(matrix) {
+  var now = new Date();
+  var todayStr = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, '0') + "-" + String(now.getDate()).padStart(2, '0');
+  var yesterday = new Date(); yesterday.setDate(now.getDate() - 1);
+  var yesterdayStr = yesterday.getFullYear() + "-" + String(yesterday.getMonth() + 1).padStart(2, '0') + "-" + String(yesterday.getDate()).padStart(2, '0');
+
+  var targetRow = matrix.find(r => r[0].toString().trim() === todayStr);
+  var previousRow = matrix.find(r => r[0].toString().trim() === yesterdayStr);
+  if (!targetRow) return;
+
+  globalDataset = [
+    { name: "Fajr", start: targetRow[1], jamat: targetRow[6], icon: "fa-cloud-moon" },
+    { name: "Sunrise", start: targetRow[2], jamat: "Shorouk", icon: "fa-sun" },
+    { name: "Zuhr", start: targetRow[3], jamat: targetRow[7], icon: "fa-cloud-sun" },
+    { name: "Asr", start: targetRow[4], jamat: targetRow[8], icon: "fa-cloud-sun-rain" },
+    { name: "Maghrib", start: targetRow[9], jamat: targetRow[9], icon: "fa-cloud-showers-heavy" },
+    { name: "Isha", start: targetRow[5], jamat: targetRow[10], icon: "fa-moon" }
+  ];
+
+  // 1. Start with the header row
+  var html = `
+    <div class="journey-header-row">
+  <span></span> 
+  <div class="header-right">
+    <span style="width: 70px; text-align: right;">Start</span>
+    <span style="width: 70px; text-align: right;">Jamat</span>
+  </div>
+</div>`;
+
+  // 2. Loop through rows
+  globalDataset.forEach(p => {
+    var isSunrise = p.name === "Sunrise";
+    var formattedStart = formatTimeLabelString(p.start);
+    var formattedJamat = isSunrise ? 'Shorouk' : formatTimeLabelString(p.jamat);
+
+    // 3. Simplified row structure
+    html += `
+      <div class="journey-step-row" id="row-${p.name.toLowerCase()}">
+        <div class="step-left-block">
+          <i class="fa-solid ${p.icon}"></i>
+          <span class="step-title">${p.name}</span>
+        </div>
+        <div class="row-right">
+          <span class="t-val">${formattedStart}</span>
+          <span class="t-val" style="color:var(--accent-neon);">${formattedJamat}</span>
+        </div>
+      </div>`;
+  });
+
+  document.getElementById("timeline-container").innerHTML = html;
+  initCountdownTickerLoop();
+}   
+
+function forceRefreshData(event) {
+  // Use event if available, otherwise find the button manually
+  const btn = event ? event.target : document.querySelector('button[onclick*="forceRefreshData"]');
+  
+  if (btn) {
+    btn.innerText = "Syncing...";
+    btn.disabled = true;
+  }
+
+  // Set wait cursor
+  document.body.style.cursor = 'wait';
+
+  google.script.run
+    .withSuccessHandler(() => {
+      if (btn) btn.innerText = "Cache Cleared!";
+      
+      // Delay reload to ensure the cache clear command completes on Google's servers
+      setTimeout(() => {
+        window.location.href = window.location.href.split('?')[0];
+      }, 1500);
+    })
+    .withFailureHandler((err) => {
+      console.error("Refresh failed:", err);
+      if (btn) {
+        btn.innerText = "Error - Try Again";
+        btn.disabled = false;
+      }
+      document.body.style.cursor = 'default';
+    })
+    .clearPortalCache();
+}
+
+    function initCountdownTickerLoop() {
+      var nameNode = document.getElementById("hero-j-name");
+      var timeNode = document.getElementById("hero-j-time");
+      var countdownNode = document.getElementById("hero-j-countdown");
+
+      function updateClockEngine() {
+        var now = new Date(); var cMins = (now.getHours() * 60) + now.getMinutes();
+        var nextTarget = null; var diffRemaining = Infinity;
+
+        globalDataset.forEach(p => {
+          if (p.name === "Sunrise" || !p.jamat || p.jamat === "--:--" || p.jamat === "Shorouk") return; 
+          var parts = p.jamat.split(':');
+          var tMins = (parseInt(parts[0], 10) * 60) + parseInt(parts[1], 10);
+          var delta = tMins - cMins;
+          if (delta > 0 && delta < diffRemaining) { diffRemaining = delta; nextTarget = p; }
+        });
+
+        document.querySelectorAll('.journey-step-row').forEach(el => el.classList.remove('step-active'));
+        
+        if (nextTarget) {
+          nameNode.innerText = `${nextTarget.name} Jama'ah`;
+          timeNode.innerText = formatTimeLabelString(nextTarget.jamat);
+          var hours = Math.floor(diffRemaining / 60); var mins = diffRemaining % 60;
+          countdownNode.innerText = hours > 0 ? `${hours}h ${mins}m remaining` : `${mins}m remaining`;
+          
+          var activeRow = document.getElementById(`row-${nextTarget.name.toLowerCase()}`);
+          if (activeRow) activeRow.classList.add('step-active');
+          updateDynamicSkyTheme(nextTarget.name);
+        } else {
+          nameNode.innerText = "Fajr Tomorrow";
+          timeNode.innerText = formatTimeLabelString(globalDataset[0].jamat);
+          countdownNode.innerText = "All prayers completed for today.";
+          var fajrRow = document.getElementById("row-fajr"); if (fajrRow) fajrRow.classList.add('step-active');
+          updateDynamicSkyTheme("ISHA");
+        }
+      }
+      updateClockEngine(); 
+      setInterval(updateClockEngine, 30000);
+    }
+  </script>
+</body>
+</html>
