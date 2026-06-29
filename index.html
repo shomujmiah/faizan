@@ -515,21 +515,57 @@
     }
 
   function syncDatabaseContextPayload() {
-  // 1. Show the loader immediately if it exists
+  // 1. Show the loader
   var loader = document.getElementById('loader-overlay');
   if (loader) loader.style.display = 'flex';
 
-  // Add this:
-const API_URL = 'https://script.google.com/macros/s/AKfycbxZVQfNzONfCldm77yBhkPLeUvPi12D1rAfoYUXhRGX_e25fPBYXr29wAUfvbcqYAPq/exec';
+  // 2. Fetch from your Cloudflare proxy endpoint
+  // This /api endpoint is handled by the functions/api.js file you created
+  fetch('/api')
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    })
+    .then(response => {
+      // 3. Hide loader
+      if (loader) loader.style.display = 'none';
+      
+      var insightsTitle = document.getElementById("insights-title-node");
+      if (insightsTitle) insightsTitle.innerText = "Spiritual Insights"; 
 
-fetch(API_URL)
-  .then(response => response.json())
-  .then(response => {
-    // Now call the same logic you had in your success handler
-    // e.g., renderDynamicTimelineRows(response.data);
-    console.log("Data received:", response);
-  })
-  .catch(err => console.error("Error:", err));
+      if (response && response.success) {
+        document.getElementById("hijri-label").innerHTML = `<i class="fa-solid fa-moon"></i> ${response.hijri}`;
+        
+        globalRawMasterMatrix = response.data;
+        serverSettingsCache = response.settings; 
+        
+        if (serverSettingsCache) {
+          isUserConfig24h = (serverSettingsCache.is24h === true || serverSettingsCache.is24h === "true" || serverSettingsCache.is24h === "TRUE");
+        }
+        
+        wireUpSettingsListeners();
+        renderDynamicTimelineRows(globalRawMasterMatrix);
+        generateMonthlyCalendar(globalRawMasterMatrix, response.hijri);
+        evaluateSpiritualInsightsDrawer(response.hijri, globalRawMasterMatrix);
+
+        var cacheNode = document.getElementById("cache-status-node");
+        if (cacheNode) {
+          cacheNode.innerText = "Last data sync: " + (response.lastUpdated || "Just now");
+        }
+      } else {
+        console.error("Server Error:", response.error);
+        if (insightsTitle) insightsTitle.innerText = "Sync Failed";
+      }
+    })
+    .catch(err => {
+      // 4. Handle errors
+      if (loader) loader.style.display = 'none';
+      console.error("Fetch/API Failure:", err);
+      var insightsTitle = document.getElementById("insights-title-node");
+      if (insightsTitle) insightsTitle.innerText = "Connection Error";
+    });
 }
 
 
