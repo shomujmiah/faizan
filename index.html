@@ -521,13 +521,15 @@
 
   // 2. Fetch from your Cloudflare proxy endpoint
   // This /api endpoint is handled by the functions/api.js file you created
-  fetch('/api')
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      return response.json();
-    })
+  fetch('/api') 
+  .then(response => {
+    if (!response.ok) {
+       // If it fails, log the status to see if it's 404 or 500
+       console.error("Status:", response.status);
+       throw new Error('Network response was not ok');
+    }
+    return response.json();
+  })
     .then(response => {
       // 3. Hide loader
       if (loader) loader.style.display = 'none';
