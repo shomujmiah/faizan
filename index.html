@@ -519,45 +519,17 @@
   var loader = document.getElementById('loader-overlay');
   if (loader) loader.style.display = 'flex';
 
-  google.script.run
-    .withSuccessHandler(function(response) {
-      // 2. Hide loader and reset insight title on return
-      if (loader) loader.style.display = 'none';
-      var insightsTitle = document.getElementById("insights-title-node");
-      if(insightsTitle) insightsTitle.innerText = "Spiritual Insights"; 
+  // Add this:
+const API_URL = 'https://script.google.com/macros/s/AKfycbxZVQfNzONfCldm77yBhkPLeUvPi12D1rAfoYUXhRGX_e25fPBYXr29wAUfvbcqYAPq/exec';
 
-      if (response && response.success) {
-        document.getElementById("hijri-label").innerHTML = `<i class="fa-solid fa-moon"></i> ${response.hijri}`;
-        
-        globalRawMasterMatrix = response.data;
-        serverSettingsCache = response.settings; 
-        
-        if (serverSettingsCache) {
-          isUserConfig24h = (serverSettingsCache.is24h === true || serverSettingsCache.is24h === "true" || serverSettingsCache.is24h === "TRUE");
-        }
-        
-        wireUpSettingsListeners();
-        renderDynamicTimelineRows(globalRawMasterMatrix);
-        generateMonthlyCalendar(globalRawMasterMatrix, response.hijri);
-        evaluateSpiritualInsightsDrawer(response.hijri, globalRawMasterMatrix);
-
-        var cacheNode = document.getElementById("cache-status-node");
-        if (cacheNode) {
-          cacheNode.innerText = "Last data sync: " + (response.lastUpdated || "Just now");
-        }
-      } else {
-        console.error("Server Error:", response.error);
-        if(insightsTitle) insightsTitle.innerText = "Sync Failed";
-      }
-    })
-    .withFailureHandler(function(err) {
-      // 3. Ensure loader is hidden on failure to avoid a permanent white screen
-      if (loader) loader.style.display = 'none';
-      console.error("Script Failure:", err);
-      var insightsTitle = document.getElementById("insights-title-node");
-      if(insightsTitle) insightsTitle.innerText = "Connection Error";
-    })
-    .getInitialData();
+fetch(API_URL)
+  .then(response => response.json())
+  .then(response => {
+    // Now call the same logic you had in your success handler
+    // e.g., renderDynamicTimelineRows(response.data);
+    console.log("Data received:", response);
+  })
+  .catch(err => console.error("Error:", err));
 }
 
 
