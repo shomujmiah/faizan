@@ -75,7 +75,10 @@
             <div class="row">
     <span><strong>Upload Schedule Image</strong><br>
     <small>OCR to auto-update sheets</small></span>
-    <input type="file" id="ocr-upload" accept="image/*" onchange="uploadImage(this)">
+    <input type="file" id="ocr-upload" accept="image/*">
+    <button onclick="handleManualUpload()" style="background: var(--accent); border: none; padding: 10px; border-radius: 8px; cursor: pointer; margin-left: 10px;">
+        Upload Now
+    </button>
 </div>
         </div>
     </div>
@@ -258,7 +261,42 @@ if ('serviceWorker' in navigator) {
     };
     reader.readAsDataURL(file);
 }
+       async function handleManualUpload() {
+    const fileInput = document.getElementById('ocr-upload');
+    const file = fileInput.files[0];
+
+    if (!file) {
+        alert("Please select an image first!");
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async function(e) {
+        const base64 = e.target.result.split(',')[1];
         
+        // Indicate to the user that processing has started
+        const btn = document.querySelector('button');
+        btn.innerText = "Processing...";
+        btn.disabled = true;
+
+        try {
+            // Call your Apps Script endpoint
+            const response = await fetch(API_URL + '&action=ocrProcess', {
+                method: 'POST',
+                body: JSON.stringify({ image: base64 })
+            });
+            const result = await response.json();
+            alert(result.message);
+        } catch (err) {
+            console.error(err);
+            alert("Upload failed. Check console.");
+        } finally {
+            btn.innerText = "Upload Now";
+            btn.disabled = false;
+        }
+    };
+    reader.readAsDataURL(file);
+} 
         function toggleNotifications(enabled) {
             if (enabled) Notification.requestPermission();
             localStorage.setItem('notificationsEnabled', enabled);
