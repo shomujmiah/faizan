@@ -19,7 +19,7 @@
         .calendar-header { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-weight: bold; color: var(--accent); margin-bottom: 10px; }
         .calendar-day { background: var(--card-bg); padding: 15px 5px; border-radius: 8px; cursor: pointer; text-align: center; }
         .calendar-day.selected { background-color: var(--accent); color: #050b14; font-weight: bold; }
-        .row { display: flex; padding: 10px 0; border-bottom: 1px solid var(--border-color); }
+        .row { display: flex; padding: 10px 0; border-bottom: 1px solid var(--border-color); align-items: center; }
         .row span { flex: 1; text-align: center; }
         .nav-bar { position: fixed; bottom: 0; width: 100%; background: rgba(10,15,25,0.9); backdrop-filter: blur(20px); display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid var(--border-color); z-index: 1000; }
         .nav-item { cursor: pointer; text-align: center; font-size: 12px; }
@@ -59,15 +59,14 @@
 
     <div id="settings-view" class="tab-content">
         <div class="glass-card">
-            <h3>App Configuration & Display</h3>
-            <p style="font-size: 0.8em; opacity: 0.6;">Last data sync: <span id="last-sync">--:--</span></p>
+            <h3>Configuration</h3>
             <div class="row">
                 <span><strong>Force Refresh</strong></span>
                 <button onclick="initApp()" style="background: var(--accent); border: none; padding: 10px; border-radius: 8px; cursor: pointer;">Refresh</button>
             </div>
             <div class="row">
                 <span><strong>24-Hour Format</strong></span>
-                <input type="checkbox" id="time-toggle" onchange="toggleTimeFormat(this.checked)">
+                <input type="checkbox" id="time-toggle" onchange="localStorage.setItem('use24Hour', this.checked)">
             </div>
             <div class="row">
                 <span><strong>Notifications</strong></span>
@@ -86,66 +85,79 @@
         const API_URL = 'https://script.google.com/macros/s/AKfycbxZVQfNzONfCldm77yBhkPLeUvPi12D1rAfoYUXhRGX_e25fPBYXr29wAUfvbcqYAPq/exec?action=getData';
 
         function renderPrayerJourney(row) {
-            const prayers = [
-                { name: "Fajr", start: row[1], jamat: row[6] },
-                { name: "Zuhr", start: row[3], jamat: row[7] },
-                { name: "Asr", start: row[4], jamat: row[8] },
-                { name: "Maghrib", start: "-", jamat: row[9] },
-                { name: "Isha", start: row[5], jamat: row[10] }
-            ];
+            const prayers = [{name: "Fajr", start: row[1], jamat: row[6]}, {name: "Zuhr", start: row[3], jamat: row[7]}, {name: "Asr", start: row[4], jamat: row[8]}, {name: "Maghrib", start: "-", jamat: row[9]}, {name: "Isha", start: row[5], jamat: row[10]}];
             let html = '<div class="row header"><span>Prayer</span><span>Start</span><span>Jamat</span></div>';
             prayers.forEach(p => html += `<div class="row"><span>${p.name}</span><span>${p.start}</span><span>${p.jamat}</span></div>`);
             document.getElementById('prayer-list').innerHTML = html;
         }
 
-        function generateCalendar(rows) {
-            const grid = document.getElementById('calendar-grid');
-            grid.innerHTML = ''; 
-            const firstDate = new Date(rows[1][0]);
-            const dayOfWeek = (firstDate.getDay() + 6) % 7; 
-            for (let i = 0; i < dayOfWeek; i++) grid.appendChild(document.createElement('div'));
+        function setupNotifications(rows) {
+            const todayRow = rows[30];
+            const prayerTimes = [todayRow[6], todayRow[7], todayRow[8], todayRow[9], todayRow[10]];
+            prayerTimes.forEach(time => {
+                if (!time || time === "-") return;
+                const [h, m] = time.split(':').map(Number);
+                let alarm = new Date();
+                alarm.setHours(h, m - 15, 0, 0);
+                if (alarm > new Date()) setTimeout(() => new Notification("Prayer Reminder", {body: "Jamat in 15 mins!"}), alarm - new Date());
+            });
+        }
 
+        function startCountdown(rows) {
+            const row = rows[30];
+            const jamats = [{n: "Fajr", t: row[6]}, {n: "Zuhr", t: row[7]}, {n: "Asr", t: row[8]}, {n: "Maghrib", t: row[9]}, {n: "Isha", t: row[10]}];
+            setInterval(() => {
+                const now = new Date();
+                const next = jamats.find(j => j.t !== "-" && new Date().setHours(...j.t.split(':'),0,0) > now);
+                if (next) {
+                    const diff = new Date().setHours(...next.t.split(':'),0,0) - now;
+                    document.getElementById('next-prayer-name').innerText = `Next: ${next.n}`;
+                    document.getElementById('timer').innerText = new Date(diff).toISOString().substr(11, 8);
+                }
+            }, 1000);
+        }
+
+        function generateCalendar(rows) {
+            const grid = document.getElementById('calendar-grid'); grid.innerHTML = '';
+            const firstDate = new Date(rows[1][0]);
+            for (let i = 0; i < (firstDate.getDay() + 6) % 7; i++) grid.appendChild(document.createElement('div'));
             rows.forEach((row, idx) => {
-                if (idx === 0 || !row[0]) return; 
+                if (idx === 0 || !row[0]) return;
                 const dayDiv = document.createElement('div');
-                dayDiv.className = 'calendar-day';
+                dayDiv.className = 'calendar-day' + (idx === 30 ? ' selected' : '');
                 dayDiv.innerHTML = `<strong>${idx}</strong>`;
-                if (idx === 30) dayDiv.classList.add('selected');
-                dayDiv.onclick = () => {
-                    document.querySelectorAll('.calendar-day').forEach(d => d.classList.remove('selected'));
-                    dayDiv.classList.add('selected');
-                    renderDetailedSchedule(row);
-                };
+                dayDiv.onclick = () => { renderDetailedSchedule(row); };
                 grid.appendChild(dayDiv);
             });
         }
 
         function renderDetailedSchedule(row) {
-            const dateObj = new Date(row[0]);
-            document.getElementById('salah-details').innerHTML = `
-                <h3>${dateObj.toLocaleDateString('en-GB', {weekday: 'long', day: 'numeric', month: 'short'})} | ${row[11] || ''}</h3>
-                <div class="row"><span>Fajr</span><span>${row[1]}</span><span>${row[6]}</span></div>
-                <div class="row"><span>Zuhr</span><span>${row[3]}</span><span>${row[7]}</span></div>
-                <div class="row"><span>Asr</span><span>${row[4]}</span><span>${row[8]}</span></div>
-                <div class="row"><span>Maghrib</span><span>-</span><span>${row[9]}</span></div>
-                <div class="row"><span>Isha</span><span>${row[5]}</span><span>${row[10]}</span></div>
-            `;
+            document.getElementById('salah-details').innerHTML = `<h3>${new Date(row[0]).toLocaleDateString('en-GB', {weekday: 'long', day: 'numeric'})}</h3><div class="row"><span>Fajr</span><span>${row[1]}</span><span>${row[6]}</span></div><div class="row"><span>Zuhr</span><span>${row[3]}</span><span>${row[7]}</span></div><div class="row"><span>Asr</span><span>${row[4]}</span><span>${row[8]}</span></div><div class="row"><span>Maghrib</span><span>-</span><span>${row[9]}</span></div><div class="row"><span>Isha</span><span>${row[5]}</span><span>${row[10]}</span></div>`;
         }
 
-        function showTab(tabId) {
+        function toggleNotifications(enabled) {
+            if (enabled) Notification.requestPermission();
+            localStorage.setItem('notificationsEnabled', enabled);
+        }
+
+        function showTab(id) {
             document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
-            document.getElementById(tabId + '-view').style.display = 'block';
+            document.getElementById(id + '-view').style.display = 'block';
         }
 
         async function initApp() {
             try {
-                const response = await fetch(API_URL, { mode: 'cors', redirect: 'follow' });
-                const data = await response.json();
+                const res = await fetch(API_URL);
+                const data = await res.json();
                 const rows = data.data;
                 renderPrayerJourney(rows[30]);
                 renderDetailedSchedule(rows[30]);
                 generateCalendar(rows);
-                document.getElementById('last-sync').innerText = new Date().toLocaleTimeString();
+                startCountdown(rows);
+                setupNotifications(rows);
+                // Load saved settings
+                document.getElementById('time-toggle').checked = localStorage.getItem('use24Hour') === 'true';
+                document.getElementById('notify-toggle').checked = localStorage.getItem('notificationsEnabled') === 'true';
             } catch (err) { console.error(err); }
         }
 
