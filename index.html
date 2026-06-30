@@ -67,6 +67,52 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('data:text/javascript,self.addEventListener("fetch",()=>{});')
         .then(() => console.log("PWA Service Worker Registered"));
 }
+        function requestNotificationPermission() {
+    if ("Notification" in window) {
+        Notification.requestPermission().then(permission => {
+            if (permission === "granted") {
+                console.log("Notifications enabled");
+            }
+        });
+    }
+}
+
+function checkPrayerTimes(rows) {
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+
+    rows.forEach(row => {
+        // row[7] is Zuhr Jamat, row[8] is Asr, etc.
+        // Convert "14:00" string to hour/minute
+        const jamatTimes = [row[6], row[7], row[8], row[9], row[10]];
+        
+        jamatTimes.forEach(timeStr => {
+            if (!timeStr || timeStr === "Shorouk") return;
+            const [h, m] = timeStr.split(':').map(Number);
+            
+            // Calculate 15 mins before
+            let alarmM = m - 15;
+            let alarmH = h;
+            if (alarmM < 0) { alarmM += 60; alarmH -= 1; }
+
+            if (currentHour === alarmH && currentMinute === alarmM) {
+                new Notification("Prayer Reminder", {
+                    body: "Jamat starts in 15 minutes!",
+                    icon: "https://cdn-icons-png.flaticon.com/512/3203/3203875.png"
+                });
+            }
+        });
+    });
+}
+
+// Call these inside your fetchTimes function
+fetch(API_URL)
+    .then(res => res.json())
+    .then(data => {
+        requestNotificationPermission();
+        setInterval(() => checkPrayerTimes(data.data), 60000); // Check every minute
+    });
     </script>
 </body>
 </html>
