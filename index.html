@@ -10,11 +10,26 @@
         fetch(API_URL)
             .then(res => res.json())
             .then(data => {
-                document.getElementById('data').innerText = JSON.stringify(data.data);
+                // data.data is your array of rows
+                const rows = data.data; 
+                renderUI(rows);
             })
             .catch(err => {
-                document.getElementById('data').innerText = "Error: " + err;
+                document.getElementById('app').innerText = "Error: " + err;
             });
+
+        function renderUI(rows) {
+            // rows[0] is the header: ["Date", "Fajr_Start", ...]
+            // rows[1] is the first day of the month, etc.
+            
+            let html = "<h1>Prayer Times</h1><table border='1'>";
+            rows.forEach(row => {
+                html += "<tr><td>" + row.join("</td><td>") + "</td></tr>";
+            });
+            html += "</table>";
+            
+            document.getElementById('app').innerHTML = html;
+        }
     </script>
 </body>
 </html>
