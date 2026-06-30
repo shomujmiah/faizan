@@ -32,7 +32,8 @@
             margin: 20px;
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
         }
-
+.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; }
+.calendar-day { background: var(--card-bg); padding: 10px; border-radius: 10px; cursor: pointer; }
         /* Loading Spinner */
         .loader {
             display: inline-block;
@@ -74,10 +75,10 @@
     </div>
 
     <div class="nav-bar">
-        <div class="nav-item">🧭<br>Home</div>
-        <div class="nav-item">📅<br>Timetable</div>
-        <div class="nav-item" onclick="testNotification()">⚙️<br>Settings</div>
-    </div>
+    <div class="nav-item" onclick="showTab('home')">🧭<br>Home</div>
+    <div class="nav-item" onclick="showTab('timetable')">📅<br>Timetable</div>
+    <div class="nav-item" onclick="showTab('settings')">⚙️<br>Settings</div>
+</div>
 
     <script>
         const API_URL = 'https://script.google.com/macros/library/d/1LuP8fOZ3oAdajJ_eFqoxhCJgr7WoyDCVGKgEHpKfnS9h2mc6bOAf5vxh/17?action=getData';
@@ -100,7 +101,11 @@
                 document.getElementById('app').innerHTML = "<h2>Error loading data.</h2>";
             }
         }
-
+function showTab(tabId) {
+    // Hide all glass-cards, show only the selected one
+    document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+    document.getElementById(tabId + '-view').style.display = 'block';
+}
         function renderPrayerJourney(row) {
             const prayers = [
                 { name: "Fajr", start: row[1], jamat: row[6] },
@@ -116,7 +121,32 @@
             });
             document.getElementById('prayer-list').innerHTML = html;
         }
+function generateCalendar(rows) {
+    const calendarGrid = document.getElementById('calendar-grid');
+    // Assuming rows[0] is header, data starts at index 1
+    rows.forEach((row, index) => {
+        if (index === 0) return; // skip header
+        
+        const dayDiv = document.createElement('div');
+        dayDiv.className = 'calendar-day';
+        dayDiv.innerHTML = `<span>${index}</span>`; // Or map your 'Date' column
+        
+        dayDiv.onclick = () => {
+            // Update "Salah Schedule Details" based on this row
+            renderDetailedSchedule(row);
+        };
+        calendarGrid.appendChild(dayDiv);
+    });
+}
 
+function renderDetailedSchedule(row) {
+    const detailsContainer = document.getElementById('salah-details');
+    detailsContainer.innerHTML = `
+        <div class="row"><span>Fajr</span><span>${row[1]}</span><span>${row[6]}</span></div>
+        <div class="row"><span>Zuhr</span><span>${row[3]}</span><span>${row[7]}</span></div>
+        ...
+    `;
+}
         function startCountdown(rows) {
             const row = rows[30];
             const jamatStarts = [
