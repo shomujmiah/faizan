@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#050b14">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Faizan Portal</title>
@@ -60,6 +62,11 @@
 
         // Initialize
         fetchTimes();
+        // Register Service Worker for PWA functionality
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('data:text/javascript,self.addEventListener("fetch",()=>{});')
+        .then(() => console.log("PWA Service Worker Registered"));
+}
     </script>
 </body>
 </html>
