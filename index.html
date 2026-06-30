@@ -21,16 +21,27 @@
     font-weight: bold;
 }
 
-/* Loading dots animation */
-.loading-dots::after {
-    content: '.';
-    animation: dots 1.5s steps(5, end) infinite;
+/* Container for the spinner to center it */
+.spinner-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
-@keyframes dots {
-    0%, 20% { content: '.'; }
-    40% { content: '..'; }
-    60% { content: '...'; }
-    80%, 100% { content: ''; }
+
+/* The rotating circle */
+.spinner {
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    border-top: 3px solid var(--accent);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    display: inline-block;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
         
         .glass-card { background: var(--card-bg); backdrop-filter: blur(20px); border: 1px solid var(--border-color); border-radius: 24px; padding: 25px; margin: 20px; box-shadow: 0 8px 32px 0 rgba(0,0,0,0.37); }
@@ -58,7 +69,9 @@
         <div class="glass-card" style="text-align: center;">
             <p style="color: var(--accent); font-weight: bold;">NEXT JAMAA'H</p>
             <h1 id="timer">00:00:00</h1>
-            <p id="next-prayer-name" class="loading-dots">Loading</p>
+            <p id="next-prayer-name">
+    <span class="spinner"></span> Loading...
+</p>
         </div>
         <div id="app" class="glass-card">
             <h3>Today's Prayer Journey</h3>
@@ -183,6 +196,7 @@ if ('serviceWorker' in navigator) {
         const next = jamats.find(j => j.t !== "-" && new Date().setHours(...j.t.split(':'),0,0) > now);
         
         if (next) {
+           
             const diff = new Date().setHours(...next.t.split(':'),0,0) - now;
             document.getElementById('next-prayer-name').innerText = `Next: ${next.n}`;
             document.getElementById('timer').innerText = new Date(diff).toISOString().substr(11, 8);
