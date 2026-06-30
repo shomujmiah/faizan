@@ -13,13 +13,24 @@
         }
         body { background: var(--bg-color); color: #ffffff; font-family: sans-serif; margin: 0; padding-bottom: 100px; }
 
+/* Solid highlight (no flashing) */
 .row.active {
     background-color: var(--accent);
     color: #050b14;
     border-radius: 8px;
     font-weight: bold;
-    transform: scale(1.02);
-    transition: 0.3s;
+}
+
+/* Loading dots animation */
+.loading-dots::after {
+    content: '.';
+    animation: dots 1.5s steps(5, end) infinite;
+}
+@keyframes dots {
+    0%, 20% { content: '.'; }
+    40% { content: '..'; }
+    60% { content: '...'; }
+    80%, 100% { content: ''; }
 }
         
         .glass-card { background: var(--card-bg); backdrop-filter: blur(20px); border: 1px solid var(--border-color); border-radius: 24px; padding: 25px; margin: 20px; box-shadow: 0 8px 32px 0 rgba(0,0,0,0.37); }
@@ -41,11 +52,13 @@
 </head>
 <body>
 
+    
+
     <div id="home-view" class="tab-content">
         <div class="glass-card" style="text-align: center;">
             <p style="color: var(--accent); font-weight: bold;">NEXT JAMAA'H</p>
             <h1 id="timer">00:00:00</h1>
-            <p id="next-prayer-name">Loading...</p>
+            <p id="next-prayer-name" class="loading-dots">Loading</p>
         </div>
         <div id="app" class="glass-card">
             <h3>Today's Prayer Journey</h3>
@@ -158,15 +171,12 @@ if ('serviceWorker' in navigator) {
         }
     });
 }
-        function startCountdown(rows) {
-    const row = rows[30]; // Keep your row indexing logic
-    const jamats = [
-        {n: "Fajr", t: row[6]}, 
-        {n: "Zuhr", t: row[7]}, 
-        {n: "Asr", t: row[8]}, 
-        {n: "Maghrib", t: row[9]}, 
-        {n: "Isha", t: row[10]}
-    ];
+   function startCountdown(rows) {
+    const row = rows[30];
+    const jamats = [{n: "Fajr", t: row[6]}, {n: "Zuhr", t: row[7]}, {n: "Asr", t: row[8]}, {n: "Maghrib", t: row[9]}, {n: "Isha", t: row[10]}];
+    
+    // Store the last highlighted prayer to prevent flashing
+    let lastActivePrayer = "";
 
     setInterval(() => {
         const now = new Date();
@@ -177,12 +187,15 @@ if ('serviceWorker' in navigator) {
             document.getElementById('next-prayer-name').innerText = `Next: ${next.n}`;
             document.getElementById('timer').innerText = new Date(diff).toISOString().substr(11, 8);
             
-            // Highlight the row in the prayer-list
-            document.querySelectorAll('.row').forEach(r => r.classList.remove('active'));
-            const rows = document.getElementById('prayer-list').querySelectorAll('.row');
-            // Assuming first row is header, prayer rows start at index 1
-            const targetRow = Array.from(rows).find(r => r.innerText.includes(next.n));
-            if (targetRow) targetRow.classList.add('active');
+            // Only update the UI if the active prayer has actually changed
+            if (lastActivePrayer !== next.n) {
+                document.querySelectorAll('.row').forEach(r => r.classList.remove('active'));
+                const rows = document.getElementById('prayer-list').querySelectorAll('.row');
+                const targetRow = Array.from(rows).find(r => r.innerText.includes(next.n));
+                if (targetRow) targetRow.classList.add('active');
+                
+                lastActivePrayer = next.n;
+            }
         }
     }, 1000);
 }
