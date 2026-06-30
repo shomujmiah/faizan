@@ -26,6 +26,23 @@
     color: #050b14;
     font-weight: bold;
 }
+        /* Modern Toggle Switch */
+input[type=checkbox] {
+    appearance: none;
+    width: 50px; height: 25px;
+    background: #333;
+    border-radius: 25px;
+    position: relative;
+    cursor: pointer;
+}
+input[type=checkbox]:checked { background: var(--accent); }
+input[type=checkbox]::before {
+    content: '';
+    position: absolute; width: 21px; height: 21px;
+    background: white; border-radius: 50%;
+    top: 2px; left: 2px; transition: 0.3s;
+}
+input[type=checkbox]:checked::before { transform: translateX(25px); }
     </style>
 </head>
 <body>
@@ -52,7 +69,27 @@
             <p>Select a date to view.</p>
         </div>
     </div>
+<div id="settings-view" class="tab-content" style="display:none;">
+    <div class="glass-card">
+        <h3>App Configuration & Display</h3>
+        <p style="font-size: 0.8em; opacity: 0.6;">Last data sync: <span id="last-sync">--:--</span></p>
+        
+        <div class="row">
+            <span><strong>Force Refresh Data</strong><br><small>Clear cache and re-fetch</small></span>
+            <button onclick="initApp()" style="background: var(--accent); border: none; padding: 10px; border-radius: 8px; cursor: pointer;">Refresh</button>
+        </div>
 
+        <div class="row">
+            <span><strong>24-Hour Format</strong><br><small>Use 24-hour clock</small></span>
+            <input type="checkbox" id="time-toggle" onchange="toggleTimeFormat(this.checked)">
+        </div>
+
+        <div class="row">
+            <span><strong>Notifications</strong><br><small>Enable prayer alerts</small></span>
+            <input type="checkbox" id="notify-toggle" onchange="toggleNotifications(this.checked)">
+        </div>
+    </div>
+</div>
     <div class="nav-bar">
         <div class="nav-item" onclick="showTab('home')">🧭<br>Home</div>
         <div class="nav-item" onclick="showTab('timetable')">📅<br>Timetable</div>
@@ -135,39 +172,44 @@
             }, 1000);
         }
 
-     function generateCalendar(rows) {
+   function generateCalendar(rows) {
     const grid = document.getElementById('calendar-grid');
-    grid.innerHTML = ''; // Clear previous
-    
-    // Skip the header row (index 0)
+    grid.innerHTML = ''; 
+
     rows.forEach((row, idx) => {
-        if (idx === 0) return; 
-        
+        // Skip header OR empty rows
+        if (idx === 0 || !row[0]) return; 
+
+        const dateObj = new Date(row[0]); // Ensure your Sheet Column A is a standard Date format
         const dayDiv = document.createElement('div');
         dayDiv.className = 'calendar-day';
-        dayDiv.innerText = idx; // This will show 1, 2, 3... up to the last row in your sheet
         
-        // Default: Highlight today (assuming today is index 30)
-        if (idx === 30) dayDiv.classList.add('selected');
+        // This puts the day number and the day name (e.g., 30 / Tue)
+        dayDiv.innerHTML = `<strong>${dateObj.getDate()}</strong><br><small>${dateObj.toLocaleString('default', {weekday: 'short'})}</small>`;
         
+        // Auto-select today
+        const today = new Date();
+        if (dateObj.toDateString() === today.toDateString()) {
+            dayDiv.classList.add('selected');
+            renderDetailedSchedule(row);
+        }
+
         dayDiv.onclick = () => {
-            // Remove 'selected' class from all, add to clicked
             document.querySelectorAll('.calendar-day').forEach(d => d.classList.remove('selected'));
             dayDiv.classList.add('selected');
-            
-            // Show details
             renderDetailedSchedule(row);
         };
         grid.appendChild(dayDiv);
     });
 }
-
      function renderDetailedSchedule(row) {
-    // Check if row[11] exists, otherwise just show the date
-    const islamicDate = row[11] ? `| ${row[11]}` : "";
-    
+    const dateObj = new Date(row[0]);
+    const dayName = dateObj.toLocaleString('default', { weekday: 'long' });
+    const formattedDate = dateObj.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+    const islamicDate = row[11] || ""; // Assuming Col 12 is Islamic Date
+
     document.getElementById('salah-details').innerHTML = `
-        <h3>${row[0]} ${islamicDate}</h3>
+        <h3>${dayName}, ${formattedDate} | ${islamicDate}</h3>
         <div class="row header"><span>Salah</span><span>Start</span><span>Jamat</span></div>
         <div class="row"><span>Fajr</span><span>${row[1]}</span><span>${row[6]}</span></div>
         <div class="row"><span>Zuhr</span><span>${row[3]}</span><span>${row[7]}</span></div>
@@ -188,7 +230,32 @@
         if (selected) selected.style.display = 'block';
     }
         
+// Toggle logic
+function toggleTimeFormat(is24Hour) {
+    localStorage.setItem('use24Hour', is24Hour);
+    // Add logic here to re-render your prayer times based on the format
+}
 
+function toggleNotifications(enabled) {
+    if (enabled) {
+        Notification.requestPermission().then(permission => {
+            if (permission === 'granted') {
+                localStorage.setItem('notificationsEnabled', 'true');
+                alert("Notifications enabled!");
+            } else {
+                document.getElementById('notify-toggle').checked = false;
+            }
+        });
+    } else {
+        localStorage.setItem('notificationsEnabled', 'false');
+    }
+}
+
+// Update the sync time on load
+function updateSyncTime() {
+    const now = new Date();
+    document.getElementById('last-sync').innerText = now.getHours() + ":" + now.getMinutes();
+}
         function testNotification() {
             Notification.requestPermission().then(p => {
                 if (p === "granted") alert("Notifications enabled!");
