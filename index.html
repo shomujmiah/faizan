@@ -19,18 +19,29 @@
     }
   }
 
-  function fetchTimes() {
-    console.log("Attempting to load...");
-    const script = document.createElement('script');
-    script.src = 'https://script.google.com/macros/s/AKfycbzCKtE-mKx_X8OZMsvihtXKea9eBiHxstyWIhPNdnBFoFSZnAnz374V08gpm32W_4g3/exec?action=getData&callback=handleData';
+  async function fetchTimes() {
+    console.log("Attempting to load data...");
     
-    script.onerror = () => {
-      console.error("Script injection failed.");
-      document.getElementById('app').innerText = "Error loading script.";
-    };
-    
-    document.body.appendChild(script);
-  }
+    // We use 'cors-anywhere' or a similar mirror to strip the restrictive headers
+    // that Google Apps Script imposes on browsers.
+    const url = 'https://script.google.com/macros/s/AKfycbzCKtE-mKx_X8OZMsvihtXKea9eBiHxstyWIhPNdnBFoFSZnAnz374V08gpm32W_4g3/exec?action=getData';
+    const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(url);
+
+    try {
+        const response = await fetch(proxyUrl);
+        const data = await response.json();
+        
+        // This proxy returns the data in a 'contents' field
+        const actualData = JSON.parse(data.contents);
+        
+        console.log("Data loaded via proxy:", actualData);
+        document.getElementById('app').innerText = "Data Loaded!";
+        // renderDynamicTimelineRows(actualData.data);
+    } catch (err) {
+        console.error("Proxy Load Error:", err);
+        document.getElementById('app').innerText = "Error loading data.";
+    }
+}
 
   window.addEventListener('DOMContentLoaded', fetchTimes);
 </script>
