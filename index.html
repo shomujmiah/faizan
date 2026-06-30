@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#050b14">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Faizan Portal</title>
@@ -13,161 +11,95 @@
             --border-color: rgba(255, 255, 255, 0.1);
             --accent: #34d399;
         }
-
-        body {
-            background: var(--bg-color);
-            background-attachment: fixed;
-            color: #ffffff;
-            font-family: 'Segoe UI', Roboto, sans-serif;
-            margin: 0;
-            padding-bottom: 100px;
-        }
-
-        .glass-card {
-            background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--border-color);
-            border-radius: 24px;
-            padding: 25px;
-            margin: 20px;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-        }
-.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; }
-.calendar-day { background: var(--card-bg); padding: 10px; border-radius: 10px; cursor: pointer; }
-        /* Loading Spinner */
-        .loader {
-            display: inline-block;
-            width: 40px; height: 40px;
-            border: 4px solid rgba(52, 211, 153, 0.3);
-            border-radius: 50%;
-            border-top-color: var(--accent);
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        .row { display: flex; padding: 12px 0; border-bottom: 1px solid var(--border-color); }
+        body { background: var(--bg-color); color: #ffffff; font-family: sans-serif; margin: 0; padding-bottom: 100px; }
+        .glass-card { background: var(--card-bg); backdrop-filter: blur(20px); border: 1px solid var(--border-color); border-radius: 24px; padding: 25px; margin: 20px; box-shadow: 0 8px 32px 0 rgba(0,0,0,0.37); }
+        .tab-content { display: none; }
+        #home-view { display: block; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+        .calendar-day { background: var(--card-bg); padding: 10px; border-radius: 8px; cursor: pointer; text-align: center; }
+        .row { display: flex; padding: 10px 0; border-bottom: 1px solid var(--border-color); }
         .row span { flex: 1; text-align: center; }
-        .row span:first-child { text-align: left; }
-        .row span:last-child { text-align: right; }
-        .header { font-weight: bold; color: var(--accent); }
-
-        .nav-bar {
-            position: fixed; bottom: 0; width: 100%;
-            background: rgba(10, 15, 25, 0.8);
-            backdrop-filter: blur(20px);
-            display: flex; justify-content: space-around;
-            padding: 15px 0; border-top: 1px solid var(--border-color);
-        }
+        .nav-bar { position: fixed; bottom: 0; width: 100%; background: rgba(10,15,25,0.9); backdrop-filter: blur(20px); display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid var(--border-color); }
         .nav-item { cursor: pointer; text-align: center; font-size: 12px; }
     </style>
 </head>
 <body>
 
-    <div class="glass-card" style="text-align: center;">
-        <p style="color: var(--accent); font-weight: bold; margin: 0;">NEXT JAMAA'H</p>
-        <h1 id="timer" style="margin: 10px 0; font-size: 3em;">00:00:00</h1>
-        <p id="next-prayer-name" style="opacity: 0.7;">Loading...</p>
+    <div id="home-view" class="tab-content">
+        <div class="glass-card" style="text-align: center;">
+            <p style="color: var(--accent); font-weight: bold;">NEXT JAMAA'H</p>
+            <h1 id="timer">00:00:00</h1>
+            <p id="next-prayer-name">Loading...</p>
+        </div>
+        <div id="app" class="glass-card">
+            <h3>Today's Prayer Journey</h3>
+            <div id="prayer-list"></div>
+        </div>
     </div>
 
-    <div id="app" class="glass-card" style="text-align: center;">
-        <div class="loader"></div>
-        <p>Fetching Timetable...</p>
+    <div id="timetable-view" class="tab-content">
+        <div class="glass-card">
+            <h3>June 2026</h3>
+            <div id="calendar-grid" class="calendar-grid"></div>
+        </div>
+        <div class="glass-card" id="salah-details">
+            <h3>Schedule Details</h3>
+            <p>Select a date to view.</p>
+        </div>
     </div>
 
     <div class="nav-bar">
-    <div class="nav-item" onclick="showTab('home')">🧭<br>Home</div>
-    <div class="nav-item" onclick="showTab('timetable')">📅<br>Timetable</div>
-    <div class="nav-item" onclick="showTab('settings')">⚙️<br>Settings</div>
-</div>
-<div id="home-view" class="tab-content">
-    <div class="glass-card" style="text-align: center;">
-        <p style="color: var(--accent); font-weight: bold; margin: 0;">NEXT JAMAA'H</p>
-        <h1 id="timer" style="margin: 10px 0; font-size: 3em;">00:00:00</h1>
-        <p id="next-prayer-name" style="opacity: 0.7;">Loading...</p>
+        <div class="nav-item" onclick="showTab('home')">🧭<br>Home</div>
+        <div class="nav-item" onclick="showTab('timetable')">📅<br>Timetable</div>
+        <div class="nav-item" onclick="testNotification()">⚙️<br>Settings</div>
     </div>
-    <div id="app" class="glass-card">
-        <h3 style="margin-top: 0;">Today's Prayer Journey</h3>
-        <div id="prayer-list"></div>
-    </div>
-</div>
 
-<div id="timetable-view" class="tab-content" style="display:none;">
-    <div class="glass-card">
-        <h3>Interactive Calendar</h3>
-        <div id="calendar-grid" class="calendar-grid"></div>
-    </div>
-    <div class="glass-card">
-        <h3>Schedule Details</h3>
-        <div id="salah-details">Select a date to view details.</div>
-    </div>
-</div>
     <script>
-        const API_URL = 'https://script.google.com/macros/library/d/1LuP8fOZ3oAdajJ_eFqoxhCJgr7WoyDCVGKgEHpKfnS9h2mc6bOAf5vxh/17?action=getData';
+        // REPLACE THIS URL WITH YOUR WORKING DEPLOYMENT URL
+        
+const API_URL = 'https://script.google.com/macros/library/d/1LuP8fOZ3oAdajJ_eFqoxhCJgr7WoyDCVGKgEHpKfnS9h2mc6bOAf5vxh/17?action=getData';
 
         document.addEventListener('DOMContentLoaded', initApp);
 
-        // Initialize - Ensure API_URL is correct!
-    async function initApp() {
-        try {
-            const response = await fetch('YOUR_VALID_EXEC_URL_HERE?action=getData');
-            if (!response.ok) throw new Error('Network error');
-            const data = await response.json();
-            
-            renderPrayerJourney(data.data[30]);
-            setupNotifications(data.data);
-            startCountdown(data.data);
-            generateCalendar(data.data); // New: Populate calendar
-        } catch (err) {
-            console.error(err);
-            document.getElementById('app').innerHTML = "<h2>Error loading data. Check URL.</h2>";
+        async function initApp() {
+            try {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+                renderPrayerJourney(data.data[30]);
+                setupNotifications(data.data);
+                startCountdown(data.data);
+                generateCalendar(data.data);
+            } catch (err) {
+                console.error(err);
+                document.getElementById('app').innerHTML = "<h2>Check your API URL!</h2>";
+            }
         }
-    }
-// Tab Switching Logic
-    function showTab(tabId) {
-        document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
-        document.getElementById(tabId + '-view').style.display = 'block';
-    }
-        function renderPrayerJourney(row) {
-            const prayers = [
-                { name: "Fajr", start: row[1], jamat: row[6] },
-                { name: "Zuhr", start: row[3], jamat: row[7] },
-                { name: "Asr", start: row[4], jamat: row[8] },
-                { name: "Maghrib", start: "-", jamat: row[9] },
-                { name: "Isha", start: row[5], jamat: row[10] }
-            ];
 
-            let html = '<div class="row header"><span>Prayer</span><span>Start</span><span>Jamat</span></div>';
-            prayers.forEach(p => {
-                html += `<div class="row"><span>${p.name}</span><span>${p.start}</span><span>${p.jamat}</span></div>`;
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+            document.getElementById(tabId + '-view').style.display = 'block';
+        }
+
+        function generateCalendar(rows) {
+            const grid = document.getElementById('calendar-grid');
+            rows.forEach((row, idx) => {
+                if (idx === 0) return;
+                const day = document.createElement('div');
+                day.className = 'calendar-day';
+                day.innerText = idx;
+                day.onclick = () => renderDetailedSchedule(row);
+                grid.appendChild(day);
             });
-            document.getElementById('prayer-list').innerHTML = html;
         }
-function generateCalendar(rows) {
-    const calendarGrid = document.getElementById('calendar-grid');
-    // Assuming rows[0] is header, data starts at index 1
-    rows.forEach((row, index) => {
-        if (index === 0) return; // skip header
-        
-        const dayDiv = document.createElement('div');
-        dayDiv.className = 'calendar-day';
-        dayDiv.innerHTML = `<span>${index}</span>`; // Or map your 'Date' column
-        
-        dayDiv.onclick = () => {
-            // Update "Salah Schedule Details" based on this row
-            renderDetailedSchedule(row);
-        };
-        calendarGrid.appendChild(dayDiv);
-    });
-}
 
-function renderDetailedSchedule(row) {
-    const detailsContainer = document.getElementById('salah-details');
-    detailsContainer.innerHTML = `
-        <div class="row"><span>Fajr</span><span>${row[1]}</span><span>${row[6]}</span></div>
-        <div class="row"><span>Zuhr</span><span>${row[3]}</span><span>${row[7]}</span></div>
-        ...
-    `;
-}
+        function renderDetailedSchedule(row) {
+            document.getElementById('salah-details').innerHTML = `
+                <h3>Details</h3>
+                <div class="row"><span>Fajr</span><span>${row[1]}</span><span>${row[6]}</span></div>
+                <div class="row"><span>Zuhr</span><span>${row[3]}</span><span>${row[7]}</span></div>
+                <div class="row"><span>Asr</span><span>${row[4]}</span><span>${row[8]}</span></div>
+            `;
+        }
         function startCountdown(rows) {
             const row = rows[30];
             const jamatStarts = [
