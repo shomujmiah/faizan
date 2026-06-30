@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#050b14">
@@ -7,103 +7,91 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Faizan Portal</title>
     <style>
-
         :root {
-        --bg-color: radial-gradient(circle at top, #0f2027, #050b14);
-        --card-bg: rgba(255, 255, 255, 0.05);
-        --border-color: rgba(255, 255, 255, 0.1);
-        --accent: #34d399;
-    }
+            --bg-color: radial-gradient(circle at top, #0f2027, #050b14);
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --accent: #34d399;
+        }
 
-    body {
-        background: var(--bg-color);
-        background-attachment: fixed;
-        color: #ffffff;
-        font-family: 'Segoe UI', Roboto, sans-serif;
-        margin: 0;
-        padding-bottom: 100px;
-    }
-/* Loading Spinner */
-.loader {
-    display: inline-block;
-    width: 30px;
-    height: 30px;
-    border: 3px solid rgba(52, 211, 153, 0.3);
-    border-radius: 50%;
-    border-top-color: var(--accent);
-    animation: spin 1s ease-in-out infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-    .glass-card {
-        background: var(--card-bg);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border: 1px solid var(--border-color);
-        border-radius: 24px;
-        padding: 25px;
-        margin: 20px;
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-    }
+        body {
+            background: var(--bg-color);
+            background-attachment: fixed;
+            color: #ffffff;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding-bottom: 100px;
+        }
 
-    .nav-bar {
-        position: fixed;
-        bottom: 0; width: 100%;
-        background: rgba(10, 15, 25, 0.8);
-        backdrop-filter: blur(20px);
-        display: flex;
-        justify-content: space-around;
-        padding: 20px 0;
-        border-top: 1px solid var(--border-color);
-    }
-         /* Layout */
-        .header-card { text-align: center; }
-        .row { 
-    display: flex; 
-    justify-content: space-between; 
-    padding: 12px 0; 
-    border-bottom: 1px solid var(--border-color); 
-}
-.row span { 
-    flex: 1; /* Each column gets equal space */
-    text-align: center; 
-}
-.row span:first-child { text-align: left; }
-.row span:last-child { text-align: right; }
-        /* Bottom Navigation */
-    
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 25px;
+            margin: 20px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        /* Loading Spinner */
+        .loader {
+            display: inline-block;
+            width: 40px; height: 40px;
+            border: 4px solid rgba(52, 211, 153, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--accent);
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .row { display: flex; padding: 12px 0; border-bottom: 1px solid var(--border-color); }
+        .row span { flex: 1; text-align: center; }
+        .row span:first-child { text-align: left; }
+        .row span:last-child { text-align: right; }
+        .header { font-weight: bold; color: var(--accent); }
+
+        .nav-bar {
+            position: fixed; bottom: 0; width: 100%;
+            background: rgba(10, 15, 25, 0.8);
+            backdrop-filter: blur(20px);
+            display: flex; justify-content: space-around;
+            padding: 15px 0; border-top: 1px solid var(--border-color);
+        }
         .nav-item { cursor: pointer; text-align: center; font-size: 12px; }
-        .switch { width: 40px; height: 20px; background: #333; border-radius: 20px; position: relative; }
     </style>
 </head>
 <body>
+
     <div class="glass-card" style="text-align: center;">
         <p style="color: var(--accent); font-weight: bold; margin: 0;">NEXT JAMAA'H</p>
         <h1 id="timer" style="margin: 10px 0; font-size: 3em;">00:00:00</h1>
         <p id="next-prayer-name" style="opacity: 0.7;">Loading...</p>
     </div>
 
-    <div id="app" class="glass-card">
-        <h3 style="margin-top: 0;">Today's Prayer Journey</h3>
-        <div id="prayer-list"></div>
+    <div id="app" class="glass-card" style="text-align: center;">
+        <div class="loader"></div>
+        <p>Fetching Timetable...</p>
     </div>
 
     <div class="nav-bar">
         <div class="nav-item">🧭<br>Home</div>
         <div class="nav-item">📅<br>Timetable</div>
-        <div class="nav-item">⚙️<br>Settings</div>
+        <div class="nav-item" onclick="testNotification()">⚙️<br>Settings</div>
     </div>
 
     <script>
-        // Wrap everything in a DOMContentLoaded listener so it waits for the page to exist
-        document.addEventListener('DOMContentLoaded', () => {
-            initApp();
-        });
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxZVQfNzONfCldm77yBhkPLeUvPi12D1rAfoYUXhRGX_e25fPBYXr29wAUfvbcqYAPq/exec?action=getData';
+
+        document.addEventListener('DOMContentLoaded', initApp);
 
         async function initApp() {
             try {
-                const response = await fetch('https://script.google.com/macros/s/AKfycbxZVQfNzONfCldm77yBhkPLeUvPi12D1rAfoYUXhRGX_e25fPBYXr29wAUfvbcqYAPq/exec?action=getData');
+                const response = await fetch(API_URL);
                 const data = await response.json();
                 const todayRow = data.data[30]; 
+                
+                // Clear loader and show content
+                document.getElementById('app').innerHTML = '<h3 style="margin-top:0;">Today\'s Prayer Journey</h3><div id="prayer-list"></div>';
                 
                 renderPrayerJourney(todayRow);
                 setupNotifications(data.data);
@@ -129,88 +117,70 @@
             document.getElementById('prayer-list').innerHTML = html;
         }
 
-        // UPDATE: Countdown to use Jamat times
-function startCountdown(rows) {
-    const todayRow = rows[30];
-    const jamatStarts = [
-        { name: "Fajr Jamat", time: todayRow[6] },
-        { name: "Zuhr Jamat", time: todayRow[7] },
-        { name: "Asr Jamat", time: todayRow[8] },
-        { name: "Maghrib Jamat", time: todayRow[9] },
-        { name: "Isha Jamat", time: todayRow[10] }
-    ];
+        function startCountdown(rows) {
+            const row = rows[30];
+            const jamatStarts = [
+                { name: "Fajr Jamat", time: row[6] },
+                { name: "Zuhr Jamat", time: row[7] },
+                { name: "Asr Jamat", time: row[8] },
+                { name: "Maghrib Jamat", time: row[9] },
+                { name: "Isha Jamat", time: row[10] }
+            ];
 
-    setInterval(() => {
-        const now = new Date();
-        let nextJamat = null;
+            setInterval(() => {
+                const now = new Date();
+                let next = jamatStarts.find(j => {
+                    if (j.time === "-") return false;
+                    const [h, m] = j.time.split(':').map(Number);
+                    let d = new Date();
+                    d.setHours(h, m, 0, 0);
+                    return d > now;
+                });
 
-        for (let j of jamatStarts) {
-            if (j.time === "-") continue;
-            const [h, m] = j.time.split(':').map(Number);
-            let jamatDate = new Date();
-            jamatDate.setHours(h, m, 0, 0);
-
-            if (jamatDate > now) {
-                nextJamat = { name: j.name, date: jamatDate };
-                break;
-            }
+                if (next) {
+                    const [h, m] = next.time.split(':').map(Number);
+                    let target = new Date();
+                    target.setHours(h, m, 0, 0);
+                    const diff = target - now;
+                    const hrs = Math.floor(diff / 3600000);
+                    const mins = Math.floor((diff % 3600000) / 60000);
+                    const secs = Math.floor((diff % 60000) / 1000);
+                    document.getElementById('next-prayer-name').innerText = `Next: ${next.name}`;
+                    document.getElementById('timer').innerText = `${hrs.toString().padStart(2,'0')}:${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+                } else {
+                    document.getElementById('next-prayer-name').innerText = "All Jamats completed";
+                    document.getElementById('timer').innerText = "00:00:00";
+                }
+            }, 1000);
         }
 
-        if (nextJamat) {
-            const diff = nextJamat.date - now;
-            const h = Math.floor(diff / 3600000);
-            const m = Math.floor((diff % 3600000) / 60000);
-            const s = Math.floor((diff % 60000) / 1000);
-            document.getElementById('next-prayer-name').innerText = `Next: ${nextJamat.name}`;
-            document.getElementById('timer').innerText = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-        } else {
-            document.getElementById('next-prayer-name').innerText = "All Jamats completed";
-            document.getElementById('timer').innerText = "00:00:00";
-        }
-    }, 1000);
-}
-        function testNotification() {
-            if (!("Notification" in window)) return;
-            Notification.requestPermission().then(p => {
-                if (p === "granted") new Notification("Faizan Portal", { body: "Notifications are now active!" });
-            });
-        }
-function showTab(tab) {
-            console.log("Switching to: " + tab);
-            // You can add logic here to toggle visibility of different div IDs
-        }
         function setupNotifications(rows) {
-            const now = new Date();
             const todayRow = rows[30];
             const prayerMap = [
-                { name: "Fajr", time: todayRow[6] },
-                { name: "Zuhr", time: todayRow[7] },
-                { name: "Asr", time: todayRow[8] },
-                { name: "Maghrib", time: todayRow[9] },
+                { name: "Fajr", time: todayRow[6] }, { name: "Zuhr", time: todayRow[7] },
+                { name: "Asr", time: todayRow[8] }, { name: "Maghrib", time: todayRow[9] },
                 { name: "Isha", time: todayRow[10] }
             ];
             
             prayerMap.forEach(p => {
                 if (!p.time || p.time === "-") return;
                 const [h, m] = p.time.split(':').map(Number);
-                let alarmDate = new Date();
-                alarmDate.setHours(h, m - 15, 0, 0);
+                let alarm = new Date();
+                alarm.setHours(h, m - 15, 0, 0);
 
-                if (alarmDate > now) {
-                    const delay = alarmDate.getTime() - now.getTime();
+                if (alarm > new Date()) {
                     setTimeout(() => {
-                        new Notification("Prayer Reminder", { 
-                            body: `${p.name} Jamat starts in 15 minutes!`,
-                            icon: "https://cdn-icons-png.flaticon.com/512/3203/3203875.png" 
-                        });
-                    }, delay);
+                        new Notification("Prayer Reminder", { body: `${p.name} Jamat starts in 15 minutes!` });
+                    }, alarm - new Date());
                 }
             });
         }
 
-        initApp();
-        
-        
+        function testNotification() {
+            Notification.requestPermission().then(p => {
+                if (p === "granted") alert("Notifications enabled!");
+            });
+        }
     </script>
 </body>
 </html>
