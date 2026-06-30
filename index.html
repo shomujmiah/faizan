@@ -79,33 +79,54 @@
     <div class="nav-item" onclick="showTab('timetable')">📅<br>Timetable</div>
     <div class="nav-item" onclick="showTab('settings')">⚙️<br>Settings</div>
 </div>
+<div id="home-view" class="tab-content">
+    <div class="glass-card" style="text-align: center;">
+        <p style="color: var(--accent); font-weight: bold; margin: 0;">NEXT JAMAA'H</p>
+        <h1 id="timer" style="margin: 10px 0; font-size: 3em;">00:00:00</h1>
+        <p id="next-prayer-name" style="opacity: 0.7;">Loading...</p>
+    </div>
+    <div id="app" class="glass-card">
+        <h3 style="margin-top: 0;">Today's Prayer Journey</h3>
+        <div id="prayer-list"></div>
+    </div>
+</div>
 
+<div id="timetable-view" class="tab-content" style="display:none;">
+    <div class="glass-card">
+        <h3>Interactive Calendar</h3>
+        <div id="calendar-grid" class="calendar-grid"></div>
+    </div>
+    <div class="glass-card">
+        <h3>Schedule Details</h3>
+        <div id="salah-details">Select a date to view details.</div>
+    </div>
+</div>
     <script>
         const API_URL = 'https://script.google.com/macros/library/d/1LuP8fOZ3oAdajJ_eFqoxhCJgr7WoyDCVGKgEHpKfnS9h2mc6bOAf5vxh/17?action=getData';
 
         document.addEventListener('DOMContentLoaded', initApp);
 
-        async function initApp() {
-            try {
-                const response = await fetch(API_URL);
-                const data = await response.json();
-                const todayRow = data.data[30]; 
-                
-                // Clear loader and show content
-                document.getElementById('app').innerHTML = '<h3 style="margin-top:0;">Today\'s Prayer Journey</h3><div id="prayer-list"></div>';
-                
-                renderPrayerJourney(todayRow);
-                setupNotifications(data.data);
-                startCountdown(data.data);
-            } catch (err) {
-                document.getElementById('app').innerHTML = "<h2>Error loading data.</h2>";
-            }
+        // Initialize - Ensure API_URL is correct!
+    async function initApp() {
+        try {
+            const response = await fetch('YOUR_VALID_EXEC_URL_HERE?action=getData');
+            if (!response.ok) throw new Error('Network error');
+            const data = await response.json();
+            
+            renderPrayerJourney(data.data[30]);
+            setupNotifications(data.data);
+            startCountdown(data.data);
+            generateCalendar(data.data); // New: Populate calendar
+        } catch (err) {
+            console.error(err);
+            document.getElementById('app').innerHTML = "<h2>Error loading data. Check URL.</h2>";
         }
-function showTab(tabId) {
-    // Hide all glass-cards, show only the selected one
-    document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
-    document.getElementById(tabId + '-view').style.display = 'block';
-}
+    }
+// Tab Switching Logic
+    function showTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+        document.getElementById(tabId + '-view').style.display = 'block';
+    }
         function renderPrayerJourney(row) {
             const prayers = [
                 { name: "Fajr", start: row[1], jamat: row[6] },
