@@ -23,7 +23,17 @@
         margin: 0;
         padding-bottom: 100px;
     }
-
+/* Loading Spinner */
+.loader {
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    border: 3px solid rgba(52, 211, 153, 0.3);
+    border-radius: 50%;
+    border-top-color: var(--accent);
+    animation: spin 1s ease-in-out infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
     .glass-card {
         background: var(--card-bg);
         backdrop-filter: blur(20px);
@@ -47,8 +57,18 @@
     }
          /* Layout */
         .header-card { text-align: center; }
-        .row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); }
-        
+        .row { 
+    display: flex; 
+    justify-content: space-between; 
+    padding: 12px 0; 
+    border-bottom: 1px solid var(--border-color); 
+}
+.row span { 
+    flex: 1; /* Each column gets equal space */
+    text-align: center; 
+}
+.row span:first-child { text-align: left; }
+.row span:last-child { text-align: right; }
         /* Bottom Navigation */
     
         .nav-item { cursor: pointer; text-align: center; font-size: 12px; }
@@ -56,7 +76,10 @@
     </style>
 </head>
 <body>
-
+<div id="app" class="glass-card" style="text-align: center;">
+    <div class="loader"></div>
+    <p>Loading Prayer Times...</p>
+</div>
     <div class="glass-card" style="text-align: center;">
         <p style="color: var(--accent); font-weight: bold; margin: 0;">ASR JAMA'AH</p>
         <h1 id="timer" style="margin: 10px 0; font-size: 3em;">00:00:00</h1>
@@ -83,7 +106,7 @@
                 const data = await response.json();
                 const todayRow = data.data[30]; 
                 
-                renderPrayerJourney(todayRow);
+                (todayRow);
                 setupNotifications(data.data);
                 startCountdown(data.data);
             } catch (err) {
@@ -93,23 +116,24 @@
         }
 
         function renderPrayerJourney(row) {
-            const prayers = [
-                { name: "Fajr", start: row[1], jamat: row[6] },
-                { name: "Sunrise", start: row[2], jamat: "-" },
-                { name: "Zuhr", start: row[3], jamat: row[7] },
-                { name: "Asr", start: row[4], jamat: row[8] },
-                { name: "Maghrib", start: "-", jamat: row[9] },
-                { name: "Isha", start: row[5], jamat: row[10] }
-            ];
+    const prayers = [
+        { name: "Fajr", start: row[1], jamat: row[6] },
+        { name: "Zuhr", start: row[3], jamat: row[7] },
+        { name: "Asr", start: row[4], jamat: row[8] },
+        { name: "Maghrib", start: "-", jamat: row[9] },
+        { name: "Isha", start: row[5], jamat: row[10] }
+    ];
 
-            let html = '<h2>Today\'s Prayer Journey</h2>';
-            html += '<div class="row header"><span>Prayer</span><span>Start</span><span>Jamat</span></div>';
-            prayers.forEach(p => {
-                html += `<div class="row"><span>${p.name}</span><span>${p.start}</span><span>${p.jamat}</span></div>`;
-            });
-            html += `<button onclick="testNotification()">Enable Notifications</button>`;
-            document.getElementById('app').innerHTML = html;
-        }
+    let html = '<h3 style="margin-top: 0;">Today\'s Prayer Journey</h3>';
+    html += '<div class="row header"><span>Prayer</span><span>Start</span><span>Jamat</span></div>';
+    
+    prayers.forEach(p => {
+        html += `<div class="row"><span>${p.name}</span><span>${p.start}</span><span>${p.jamat}</span></div>`;
+    });
+    
+    html += `<button onclick="testNotification()">Enable Notifications</button>`;
+    document.getElementById('app').innerHTML = html;
+}
 
         // UPDATE: Countdown to use Jamat times
 function startCountdown(rows) {
