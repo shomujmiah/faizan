@@ -170,20 +170,17 @@
         }
 
    // UPDATED INIT
-    async function initApp() {
-    // Now you can use your direct Google URL without the proxy prefix!
-    const API_URL = 'https://script.google.com/macros/s/AKfycbxZVQfNzONfCldm77yBhkPLeUvPi12D1rAfoYUXhRGX_e25fPBYXr29wAUfvbcqYAPq/exec?action=getData';
+   async function initApp() {
+    // We use a reliable public proxy to wrap your Google URL
+    const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(API_URL);
 
     try {
-        const response = await fetch(API_URL, {
-            method: 'GET',
-            mode: 'cors',
-            redirect: 'follow'
-        });
-        
-        if (!response.ok) throw new Error("HTTP error " + response.status);
+        const response = await fetch(proxyUrl);
+        if (!response.ok) throw new Error("Network error");
         
         const data = await response.json();
+        
+        // Update your UI
         renderPrayerJourney(data.data[30]);
         setupNotifications(data.data);
         startCountdown(data.data);
