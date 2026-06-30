@@ -7,29 +7,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Faizan Portal</title>
     <style>
-        :root { --bg: #050b14; --card: #0f172a; --accent: #34d399; --text: #ffffff; }
-        body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; padding: 20px; }
-        .card { background: var(--card); border-radius: 20px; padding: 20px; max-width: 400px; margin: 0 auto; margin-bottom: 20px; text-align: center; }
-        .row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #1e293b; }
-        .header { font-weight: bold; color: var(--accent); }
-        button { margin-top: 20px; padding: 10px; background: var(--accent); border: none; border-radius: 5px; cursor: pointer; }
-        /* Add this to your <style> block to align the times perfectly */
-    .row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #1e293b; align-items: center; }
-    .row span { flex: 1; text-align: center; }
-    .row span:first-child { text-align: left; }
-    .row span:last-child { text-align: right; }
-    .header { font-weight: bold; color: var(--accent); }
+        :root { --glass: rgba(255, 255, 255, 0.05); --border: rgba(255, 255, 255, 0.1); --accent: #34d399; }
+        body { background: #050b14; color: white; font-family: sans-serif; margin: 0; padding-bottom: 80px; }
+        
+        /* Glassmorphism Cards */
+        .card { background: var(--glass); backdrop-filter: blur(15px); border: 1px solid var(--border); 
+                border-radius: 20px; padding: 20px; margin: 15px; }
+        
+        /* Layout */
+        .header-card { text-align: center; }
+        .row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); }
+        
+        /* Bottom Navigation */
+        .nav-bar { position: fixed; bottom: 0; width: 100%; background: var(--glass); backdrop-filter: blur(20px);
+                   display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid var(--border); }
+        .nav-item { cursor: pointer; text-align: center; font-size: 12px; }
+        .switch { width: 40px; height: 20px; background: #333; border-radius: 20px; position: relative; }
     </style>
 </head>
 <body>
 
-    <div id="countdown" class="card">
-        <h3 id="next-prayer-name">Loading Next Prayer...</h3>
-        <h1 id="timer">00:00:00</h1>
+    <div class="card header-card">
+        <h3 id="next-prayer-name">Loading...</h3>
+        <h1 id="timer" style="font-size: 2.5em; color: var(--accent);">00:00:00</h1>
     </div>
 
     <div id="app" class="card">
-        <h2>Loading Prayer Times...</h2>
+        <h2>Today's Prayer Journey</h2>
+        <div id="prayer-list"></div>
+    </div>
+
+    <div class="nav-bar">
+        <div class="nav-item" onclick="showTab('home')">🧭<br>Home</div>
+        <div class="nav-item" onclick="showTab('timetable')">📅<br>Timetable</div>
+        <div class="nav-item" onclick="showTab('settings')">⚙️<br>Settings</div>
     </div>
 
     <script>
@@ -115,7 +126,10 @@ function startCountdown(rows) {
                 if (p === "granted") new Notification("Faizan Portal", { body: "Notifications are now active!" });
             });
         }
-
+function showTab(tab) {
+            console.log("Switching to: " + tab);
+            // You can add logic here to toggle visibility of different div IDs
+        }
         function setupNotifications(rows) {
             const now = new Date();
             const todayRow = rows[30];
@@ -146,6 +160,8 @@ function startCountdown(rows) {
         }
 
         initApp();
+        
+        
     </script>
 </body>
 </html>
