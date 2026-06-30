@@ -20,28 +20,22 @@
   }
 
   async function fetchTimes() {
-    console.log("Attempting to load data...");
-    
-    // We use 'cors-anywhere' or a similar mirror to strip the restrictive headers
-    // that Google Apps Script imposes on browsers.
+    console.log("Starting native fetch...");
     const url = 'https://script.google.com/macros/s/AKfycbzCKtE-mKx_X8OZMsvihtXKea9eBiHxstyWIhPNdnBFoFSZnAnz374V08gpm32W_4g3/exec?action=getData';
-    const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(url);
 
     try {
-        const response = await fetch(proxyUrl);
-        const data = await response.json();
+        // mode: 'no-cors' prevents the browser from blocking based on headers
+        const response = await fetch(url, { mode: 'no-cors' });
         
-        // This proxy returns the data in a 'contents' field
-        const actualData = JSON.parse(data.contents);
-        
-        console.log("Data loaded via proxy:", actualData);
-        document.getElementById('app').innerText = "Data Loaded!";
-        // renderDynamicTimelineRows(actualData.data);
+        // Because 'no-cors' returns an "opaque" response (we can't see the JSON),
+        // we must solve the CORS issue on the SERVER side (Google Script).
+        console.log("Request sent (opaque mode). Check network tab.");
+        document.getElementById('app').innerText = "Request Sent. Check Console.";
     } catch (err) {
-        console.error("Proxy Load Error:", err);
-        document.getElementById('app').innerText = "Error loading data.";
+        console.error("Fetch Error:", err);
     }
 }
+fetchTimes();
 
   window.addEventListener('DOMContentLoaded', fetchTimes);
 </script>
