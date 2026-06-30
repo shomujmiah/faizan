@@ -28,23 +28,26 @@
     const API_URL = 'https://script.google.com/macros/s/AKfycbxZVQfNzONfCldm77yBhkPLeUvPi12D1rAfoYUXhRGX_e25fPBYXr29wAUfvbcqYAPq/exec?action=getData';
 
     try {
-        // Use a controller to abort if it takes too long
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+        // Use 'no-cache' and specific headers to bypass desktop firewall/proxy issues
+        const response = await fetch(API_URL, {
+            method: 'GET',
+            mode: 'cors',
+            cache: 'no-cache',
+            headers: {
+                'Accept': 'application/json'
+            }
+        });
 
-        const response = await fetch(API_URL, { signal: controller.signal });
-        clearTimeout(timeoutId);
-
+        if (!response.ok) throw new Error("Network response was not ok");
+        
         const data = await response.json();
         const todayRow = data.data[30]; 
         
         renderPrayerJourney(todayRow);
         setupNotifications(data.data);
     } catch (err) {
-        console.error("Connection failed, retrying in 5 seconds...", err);
-        // Retry once after 5 seconds if connection closed
-        setTimeout(initApp, 5000); 
-        document.getElementById('app').innerHTML = "<h2>Reconnecting...</h2>";
+        console.error("Desktop Fetch Error:", err);
+        document.getElementById('app').innerHTML = "<h2>Desktop Connection Error. Try a different browser or network.</h2>";
     }
 }
 
