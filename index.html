@@ -1,37 +1,20 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <meta charset="UTF-8">
-    <title>Faizan Portal</title>
-</head>
 <body>
-    <div id="app">Loading Prayer Times...</div>
+    <h1>Prayer Times</h1>
+    <div id="data">Loading...</div>
 
-  <script>
-  function handleData(response) {
-    if (response.error) {
-      console.error("Google Script Error:", response.error);
-      document.getElementById('app').innerText = "Google Script Error: " + response.error;
-    } else {
-      console.log("Data Received:", response);
-      document.getElementById('app').innerText = "Data received!";
-      // renderDynamicTimelineRows(response.data);
-    }
-  }
+    <script>
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxZVQfNzONfCldm77yBhkPLeUvPi12D1rAfoYUXhRGX_e25fPBYXr29wAUfvbcqYAPq/exec?action=getData';
 
-  async function fetchTimes() {
-  const url = 'https://script.google.com/macros/s/AKfycbzCKtE-mKx_X8OZMsvihtXKea9eBiHxstyWIhPNdnBFoFSZnAnz374V08gpm32W_4g3/exec?action=getData';
-  
-  try {
-    const response = await fetch(url); // Standard fetch
-    const data = await response.json(); // Now this will work!
-    console.log("SUCCESS:", data);
-  } catch (err) {
-    console.error("Fetch failed:", err);
-  }
-}
-
-  window.addEventListener('DOMContentLoaded', fetchTimes);
-</script>
+        fetch(API_URL)
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('data').innerText = JSON.stringify(data.data);
+            })
+            .catch(err => {
+                document.getElementById('data').innerText = "Error: " + err;
+            });
+    </script>
 </body>
 </html>
