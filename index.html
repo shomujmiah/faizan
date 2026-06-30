@@ -1,8 +1,15 @@
 <!DOCTYPE html>
 <html>
+<head>
+    <style>
+        /* Add your original CSS here */
+        body { background: #050b14; color: white; font-family: sans-serif; padding: 20px; }
+        .card { background: #0f172a; border-radius: 20px; padding: 20px; margin-bottom: 20px; }
+        .row { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #333; }
+    </style>
+</head>
 <body>
-    <h1>Prayer Times</h1>
-    <div id="data">Loading...</div>
+    <div id="app"></div>
 
     <script>
         const API_URL = 'https://script.google.com/macros/s/AKfycbxZVQfNzONfCldm77yBhkPLeUvPi12D1rAfoYUXhRGX_e25fPBYXr29wAUfvbcqYAPq/exec?action=getData';
@@ -10,24 +17,27 @@
         fetch(API_URL)
             .then(res => res.json())
             .then(data => {
-                // data.data is your array of rows
-                const rows = data.data; 
-                renderUI(rows);
-            })
-            .catch(err => {
-                document.getElementById('app').innerText = "Error: " + err;
+                // data.data[0] is header, data.data[1] is June 1st, etc.
+                // Assuming today is June 30th (index 30)
+                renderPrayerJourney(data.data[30]); 
             });
 
-        function renderUI(rows) {
-            // rows[0] is the header: ["Date", "Fajr_Start", ...]
-            // rows[1] is the first day of the month, etc.
-            
-            let html = "<h1>Prayer Times</h1><table border='1'>";
-            rows.forEach(row => {
-                html += "<tr><td>" + row.join("</td><td>") + "</td></tr>";
+        function renderPrayerJourney(row) {
+            // Mapping: B=1, C=2, D=3, E=4, F=5, G=6, H=7, I=8, J=9, K=10
+            const prayers = [
+                { name: "Fajr", start: row[1], jamat: row[6] },
+                { name: "Sunrise", start: row[2], jamat: "Shorouk" },
+                { name: "Zuhr", start: row[3], jamat: row[7] },
+                { name: "Asr", start: row[4], jamat: row[8] },
+                { name: "Maghrib", start: row[5], jamat: row[9] }, // Magrib start often = jamat
+                { name: "Isha", start: row[5], jamat: row[10] }
+            ];
+
+            let html = '<div class="card"><h2>Today\'s Prayer Journey</h2>';
+            prayers.forEach(p => {
+                html += `<div class="row"><span>${p.name}</span><span>${p.start}</span><span>${p.jamat}</span></div>`;
             });
-            html += "</table>";
-            
+            html += '</div>';
             document.getElementById('app').innerHTML = html;
         }
     </script>
