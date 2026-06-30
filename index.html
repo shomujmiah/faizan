@@ -65,19 +65,40 @@
         }
 
         function setupNotifications(rows) {
-            setInterval(() => {
-                const now = new Date();
-                rows.forEach(row => {
-                    [row[6], row[7], row[8], row[9], row[10]].forEach(timeStr => {
-                        if (!timeStr || timeStr.length < 5) return;
-                        const [h, m] = timeStr.split(':').map(Number);
-                        if (now.getHours() === h && now.getMinutes() === (m - 15)) {
-                            new Notification("Prayer Reminder", { body: "Jamat starts in 15 minutes!" });
-                        }
+    setInterval(() => {
+        const now = new Date();
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
+
+        rows.forEach(row => {
+            // Only check the row for today's date (index 30) to save processing
+            const jamatTimes = [row[6], row[7], row[8], row[9], row[10]];
+            
+            jamatTimes.forEach(timeStr => {
+                if (!timeStr || timeStr === "-") return;
+                
+                let [h, m] = timeStr.split(':').map(Number);
+                
+                // Calculate 15 mins before
+                let alarmM = m - 15;
+                let alarmH = h;
+                if (alarmM < 0) {
+                    alarmM += 60;
+                    alarmH -= 1;
+                }
+
+                // Match hour and minute
+                if (currentHour === alarmH && currentMinute === alarmM) {
+                    console.log("Time matches! Triggering...");
+                    new Notification("Prayer Reminder", { 
+                        body: "Jamat starts in 15 minutes!",
+                        icon: "https://cdn-icons-png.flaticon.com/512/3203/3203875.png"
                     });
-                });
-            }, 60000);
-        }
+                }
+            });
+        });
+    }, 60000); // Check every minute
+}
 
         initApp();
     </script>
