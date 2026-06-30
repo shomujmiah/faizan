@@ -131,25 +131,37 @@
         }
 
       function generateCalendar(rows) {
-            const grid = document.getElementById('calendar-grid');
-            rows.forEach((row, idx) => {
-                if (idx === 0) return;
-                const day = document.createElement('div');
-                day.className = 'calendar-day';
-                day.innerText = idx;
-                day.onclick = () => renderDetailedSchedule(row);
-                grid.appendChild(day);
-            });
-        }
+    const grid = document.getElementById('calendar-grid');
+    grid.innerHTML = ''; // Clear existing
+    rows.forEach((row, idx) => {
+        if (idx === 0) return; // Skip header row
+        
+        const dayDiv = document.createElement('div');
+        dayDiv.className = 'calendar-day';
+        // Display just the day number (index)
+        dayDiv.innerHTML = `<strong>${idx}</strong>`;
+        
+        // Default highlight for today (June 30 is index 30)
+        if (idx === 30) dayDiv.style.background = 'var(--accent)'; 
+        
+        dayDiv.onclick = () => renderDetailedSchedule(row);
+        grid.appendChild(dayDiv);
+    });
+}
 
         function renderDetailedSchedule(row) {
-            document.getElementById('salah-details').innerHTML = `
-                <h3>Details</h3>
-                <div class="row"><span>Fajr</span><span>${row[1]}</span><span>${row[6]}</span></div>
-                <div class="row"><span>Zuhr</span><span>${row[3]}</span><span>${row[7]}</span></div>
-                <div class="row"><span>Asr</span><span>${row[4]}</span><span>${row[8]}</span></div>
-            `;
-        }
+    // Assuming row indices: 1:FajrStart, 6:FajrJamat, 3:ZuhrStart, 7:ZuhrJamat, 
+    // 4:AsrStart, 8:AsrJamat, 9:MaghribJamat, 5:IshaStart, 10:IshaJamat
+    const headerDate = `<h3>${row[0]} | ${row[11]}</h3>`;
+    document.getElementById('salah-details').innerHTML = headerDate + `
+        <h3>Details</h3>
+        <div class="row"><span>Fajr</span><span>${row[1]}</span><span>${row[6]}</span></div>
+        <div class="row"><span>Zuhr</span><span>${row[3]}</span><span>${row[7]}</span></div>
+        <div class="row"><span>Asr</span><span>${row[4]}</span><span>${row[8]}</span></div>
+        <div class="row"><span>Maghrib</span><span>-</span><span>${row[9]}</span></div>
+        <div class="row"><span>Isha</span><span>${row[5]}</span><span>${row[10]}</span></div>
+    `;
+}
        
 
         
@@ -171,7 +183,6 @@
 
    // UPDATED INIT
    async function initApp() {
-    // We use a reliable public proxy to wrap your Google URL
     const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(API_URL);
 
     try {
@@ -179,12 +190,14 @@
         if (!response.ok) throw new Error("Network error");
         
         const data = await response.json();
+        const rows = data.data; // Now 'rows' is defined
         
-        // Update your UI
-        renderPrayerJourney(data.data[30]);
-        setupNotifications(data.data);
-        startCountdown(data.data);
-        generateCalendar(data.data);
+        // Render the UI
+        renderPrayerJourney(rows[30]); // Today's data
+        renderDetailedSchedule(rows[30]); // Default details to today
+        setupNotifications(rows);
+        startCountdown(rows);
+        generateCalendar(rows);
     } catch (err) {
         console.error("Fetch Error:", err);
         document.getElementById('app').innerHTML = "<h2>Data Load Error.</h2>";
