@@ -1,20 +1,24 @@
 export async function onRequest(context) {
-  const GOOGLE_URL = 'https://script.google.com/macros/s/AKfycbzCKtE-mKx_X8OZMsvihtXKea9eBiHxstyWIhPNdnBFoFSZnAnz374V08gpm32W_4g3/exec?action=getData';
+  const { request } = context;
+  const url = new URL(request.url);
+  const GOOGLE_URL = 'https://script.google.com/macros/s/AKfycbzCKtE-mKx_X8OZMsvihtXKea9eBiHxstyWIhPNdnBFoFSZnAnz374V08gpm32W_4g3/exec';
 
-  try {
-    const response = await fetch(GOOGLE_URL);
-    if (!response.ok) {
-        throw new Error('Failed to fetch from Google');
-    }
+  // If the request is for /api (GET), fetch data
+  if (request.method === 'GET') {
+    const response = await fetch(GOOGLE_URL + '?action=getData');
     const data = await response.json();
-
     return new Response(JSON.stringify(data), {
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
-      }
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
     });
-  } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), { status: 500 });
+  }
+
+  // If the request is POST (Saving Settings), forward it to Google
+  if (request.method === 'POST') {
+    const body = await request.json();
+    const response = await fetch(GOOGLE_URL, {
+      method: 'POST',
+      body: JSON.stringify(body)
+    });
+    return response;
   }
 }
