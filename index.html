@@ -57,23 +57,40 @@
     <script>
         // REPLACE THIS URL WITH YOUR WORKING DEPLOYMENT URL
         
-const API_URL = 'https://script.google.com/macros/library/d/1LuP8fOZ3oAdajJ_eFqoxhCJgr7WoyDCVGKgEHpKfnS9h2mc6bOAf5vxh/17?action=getData';
+const API_URL = 'https://script.google.com/macros/s/AKfycbxZVQfNzONfCldm77yBhkPLeUvPi12D1rAfoYUXhRGX_e25fPBYXr29wAUfvbcqYAPq/exec?action=getData';
 
         document.addEventListener('DOMContentLoaded', initApp);
 
         async function initApp() {
-            try {
-                const response = await fetch(API_URL);
-                const data = await response.json();
-                renderPrayerJourney(data.data[30]);
-                setupNotifications(data.data);
-                startCountdown(data.data);
-                generateCalendar(data.data);
-            } catch (err) {
-                console.error(err);
-                document.getElementById('app').innerHTML = "<h2>Check your API URL!</h2>";
-            }
+    const API_URL = 'https://script.google.com/macros/s/AKfycbxZVQfNzONfCldm77yBhkPLeUvPi12D1rAfoYUXhRGX_e25fPBYXr29wAUfvbcqYAPq/exec?action=getData';
+
+    try {
+        // We use 'cors' mode and 'no-cache' to tell the browser 
+        // to follow the redirect while keeping the security context.
+        const response = await fetch(API_URL, {
+            method: 'GET',
+            mode: 'cors', 
+            cache: 'no-cache',
+            redirect: 'follow' // This is key: it tells the browser to follow the Google redirect
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
+
+        const data = await response.json();
+        const todayRow = data.data[30]; 
+        
+        renderPrayerJourney(todayRow);
+        setupNotifications(data.data);
+        startCountdown(data.data);
+        generateCalendar(data.data);
+
+    } catch (err) {
+        console.error("Fetch Error:", err);
+        document.getElementById('app').innerHTML = "<h2>Data Load Error. Check Console.</h2>";
+    }
+}
 
         function showTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
