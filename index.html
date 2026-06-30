@@ -56,7 +56,6 @@
 
     <script>
  const API_URL = 'https://script.google.com/macros/s/AKfycbxZVQfNzONfCldm77yBhkPLeUvPi12D1rAfoYUXhRGX_e25fPBYXr29wAUfvbcqYAPq/exec?action=getData';
-
     // 1. ALL FUNCTION DEFINITIONS GO HERE FIRST
     function renderPrayerJourney(row) {
         const prayers = [
@@ -154,11 +153,14 @@
        
 
         
-        function showTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
-            document.getElementById(tabId + '-view').style.display = 'block';
-        }
-
+        // CORRECTED TAB LOGIC
+    function showTab(tabId) {
+        // Hide all
+        document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+        // Show selected
+        const selected = document.getElementById(tabId + '-view');
+        if (selected) selected.style.display = 'block';
+    }
         
 
         function testNotification() {
@@ -167,22 +169,22 @@
             });
         }
 
+   // UPDATED INIT
     async function initApp() {
         try {
-            // Using a CORS proxy to bypass the Google redirect block
-            const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(API_URL);
-            const response = await fetch(proxyUrl);
+            const response = await fetch(API_URL, { mode: 'cors', redirect: 'follow' });
             const data = await response.json();
             
+            // Render logic
             renderPrayerJourney(data.data[30]);
-            setupNotifications(data.data);
-            startCountdown(data.data);
             generateCalendar(data.data);
+            startCountdown(data.data);
         } catch (err) {
-            console.error("Fetch Error:", err);
-            document.getElementById('app').innerHTML = "<h2>Error loading data. Check Console.</h2>";
+            console.error(err);
+            document.getElementById('app').innerHTML = "<h2>Check your Deployment Settings.</h2>";
         }
     }
+    
 
     // 3. EVENT LISTENER IS THE VERY LAST THING
     document.addEventListener('DOMContentLoaded', initApp);
