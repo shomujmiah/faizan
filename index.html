@@ -118,18 +118,39 @@
         }
 
         function generateCalendar(rows) {
-            const grid = document.getElementById('calendar-grid'); grid.innerHTML = '';
-            const firstDate = new Date(rows[1][0]);
-            for (let i = 0; i < (firstDate.getDay() + 6) % 7; i++) grid.appendChild(document.createElement('div'));
-            rows.forEach((row, idx) => {
-                if (idx === 0 || !row[0]) return;
-                const dayDiv = document.createElement('div');
-                dayDiv.className = 'calendar-day' + (idx === 30 ? ' selected' : '');
-                dayDiv.innerHTML = `<strong>${idx}</strong>`;
-                dayDiv.onclick = () => { renderDetailedSchedule(row); };
-                grid.appendChild(dayDiv);
-            });
+    const grid = document.getElementById('calendar-grid');
+    grid.innerHTML = '';
+    
+    // Header spacers
+    const firstDate = new Date(rows[1][0]);
+    const dayOfWeek = (firstDate.getDay() + 6) % 7; 
+    for (let i = 0; i < dayOfWeek; i++) grid.appendChild(document.createElement('div'));
+
+    rows.forEach((row, idx) => {
+        if (idx === 0 || !row[0]) return;
+        
+        const dayDiv = document.createElement('div');
+        dayDiv.className = 'calendar-day';
+        dayDiv.innerHTML = `<strong>${idx}</strong>`;
+        
+        // Highlight today by default
+        if (idx === new Date().getDate()) {
+            dayDiv.classList.add('selected');
         }
+
+        dayDiv.onclick = () => {
+            // 1. Clear old selection
+            document.querySelectorAll('.calendar-day').forEach(d => d.classList.remove('selected'));
+            
+            // 2. Add selection to clicked date
+            dayDiv.classList.add('selected');
+            
+            // 3. Update the details panel
+            renderDetailedSchedule(row);
+        };
+        grid.appendChild(dayDiv);
+    });
+}
 
         function renderDetailedSchedule(row) {
             document.getElementById('salah-details').innerHTML = `<h3>${new Date(row[0]).toLocaleDateString('en-GB', {weekday: 'long', day: 'numeric'})}</h3><div class="row"><span>Fajr</span><span>${row[1]}</span><span>${row[6]}</span></div><div class="row"><span>Zuhr</span><span>${row[3]}</span><span>${row[7]}</span></div><div class="row"><span>Asr</span><span>${row[4]}</span><span>${row[8]}</span></div><div class="row"><span>Maghrib</span><span>-</span><span>${row[9]}</span></div><div class="row"><span>Isha</span><span>${row[5]}</span><span>${row[10]}</span></div>`;
