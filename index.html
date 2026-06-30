@@ -7,40 +7,71 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Faizan Portal</title>
     <style>
-        :root { --glass: rgba(255, 255, 255, 0.05); --border: rgba(255, 255, 255, 0.1); --accent: #34d399; }
-        body { background: #050b14; color: white; font-family: sans-serif; margin: 0; padding-bottom: 80px; }
-        
-        /* Glassmorphism Cards */
-        .card { background: var(--glass); backdrop-filter: blur(15px); border: 1px solid var(--border); 
-                border-radius: 20px; padding: 20px; margin: 15px; }
-        
-        /* Layout */
+
+        :root {
+        --bg-color: radial-gradient(circle at top, #0f2027, #050b14);
+        --card-bg: rgba(255, 255, 255, 0.05);
+        --border-color: rgba(255, 255, 255, 0.1);
+        --accent: #34d399;
+    }
+
+    body {
+        background: var(--bg-color);
+        background-attachment: fixed;
+        color: #ffffff;
+        font-family: 'Segoe UI', Roboto, sans-serif;
+        margin: 0;
+        padding-bottom: 100px;
+    }
+
+    .glass-card {
+        background: var(--card-bg);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid var(--border-color);
+        border-radius: 24px;
+        padding: 25px;
+        margin: 20px;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    }
+
+    .nav-bar {
+        position: fixed;
+        bottom: 0; width: 100%;
+        background: rgba(10, 15, 25, 0.8);
+        backdrop-filter: blur(20px);
+        display: flex;
+        justify-content: space-around;
+        padding: 20px 0;
+        border-top: 1px solid var(--border-color);
+    }
+         /* Layout */
         .header-card { text-align: center; }
         .row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); }
         
         /* Bottom Navigation */
-        .nav-bar { position: fixed; bottom: 0; width: 100%; background: var(--glass); backdrop-filter: blur(20px);
-                   display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid var(--border); }
+    
         .nav-item { cursor: pointer; text-align: center; font-size: 12px; }
         .switch { width: 40px; height: 20px; background: #333; border-radius: 20px; position: relative; }
     </style>
 </head>
 <body>
 
-    <div class="card header-card">
-        <h3 id="next-prayer-name">Loading...</h3>
-        <h1 id="timer" style="font-size: 2.5em; color: var(--accent);">00:00:00</h1>
+    <div class="glass-card" style="text-align: center;">
+        <p style="color: var(--accent); font-weight: bold; margin: 0;">ASR JAMA'AH</p>
+        <h1 id="timer" style="margin: 10px 0; font-size: 3em;">00:00:00</h1>
+        <p id="next-prayer-name" style="opacity: 0.7;">Loading remaining time...</p>
     </div>
 
-    <div id="app" class="card">
-        <h2>Today's Prayer Journey</h2>
+    <div class="glass-card">
+        <h3 style="margin-top: 0;">Today's Prayer Journey</h3>
         <div id="prayer-list"></div>
     </div>
 
     <div class="nav-bar">
-        <div class="nav-item" onclick="showTab('home')">🧭<br>Home</div>
-        <div class="nav-item" onclick="showTab('timetable')">📅<br>Timetable</div>
-        <div class="nav-item" onclick="showTab('settings')">⚙️<br>Settings</div>
+        <div>🧭<br>Home</div>
+        <div>📅<br>Timetable</div>
+        <div>⚙️<br>Settings</div>
     </div>
 
     <script>
