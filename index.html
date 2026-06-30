@@ -72,6 +72,11 @@
                 <span><strong>Notifications</strong></span>
                 <input type="checkbox" id="notify-toggle" onchange="toggleNotifications(this.checked)">
             </div>
+            <div class="row">
+    <span><strong>Upload Schedule Image</strong><br>
+    <small>OCR to auto-update sheets</small></span>
+    <input type="file" id="ocr-upload" accept="image/*" onchange="uploadImage(this)">
+</div>
         </div>
     </div>
 
@@ -234,6 +239,26 @@ if ('serviceWorker' in navigator) {
     }
 }
 
+        async function uploadImage(input) {
+    const file = input.files[0];
+    const reader = new FileReader();
+    
+    reader.onload = async function(e) {
+        const base64 = e.target.result.split(',')[1];
+        
+        // Show loading state
+        alert("Processing image... this may take a moment.");
+
+        const response = await fetch(API_URL + '&action=ocrProcess', {
+            method: 'POST',
+            body: JSON.stringify({ image: base64 })
+        });
+        const result = await response.json();
+        alert(result.message);
+    };
+    reader.readAsDataURL(file);
+}
+        
         function toggleNotifications(enabled) {
             if (enabled) Notification.requestPermission();
             localStorage.setItem('notificationsEnabled', enabled);
