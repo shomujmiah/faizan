@@ -1,45 +1,65 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faizan Portal</title>
     <style>
-        /* Add your original CSS here */
-        body { background: #050b14; color: white; font-family: sans-serif; padding: 20px; }
-        .card { background: #0f172a; border-radius: 20px; padding: 20px; margin-bottom: 20px; }
-        .row { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #333; }
+        :root { --bg: #050b14; --card: #0f172a; --accent: #34d399; --text: #ffffff; }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; padding: 20px; }
+        .card { background: var(--card); border-radius: 20px; padding: 20px; max-width: 400px; margin: 0 auto; }
+        .row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #1e293b; }
+        .header { font-weight: bold; color: var(--accent); }
     </style>
 </head>
 <body>
-    <div id="app"></div>
+
+    <div id="app" class="card">
+        <h2>Loading Prayer Times...</h2>
+    </div>
 
     <script>
+        // Paste your Google Web App URL here
         const API_URL = 'https://script.google.com/macros/s/AKfycbxZVQfNzONfCldm77yBhkPLeUvPi12D1rAfoYUXhRGX_e25fPBYXr29wAUfvbcqYAPq/exec?action=getData';
 
-        fetch(API_URL)
-            .then(res => res.json())
-            .then(data => {
-                // data.data[0] is header, data.data[1] is June 1st, etc.
-                // Assuming today is June 30th (index 30)
-                renderPrayerJourney(data.data[30]); 
-            });
+        async function fetchTimes() {
+            try {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+                
+                // Assuming today is June 30th, which is the 30th index of data (Row 31)
+                const todayRow = data.data[30]; 
+                renderPrayerJourney(todayRow);
+            } catch (err) {
+                console.error(err);
+                document.getElementById('app').innerHTML = "<h2>Error loading data.</h2>";
+            }
+        }
 
         function renderPrayerJourney(row) {
-            // Mapping: B=1, C=2, D=3, E=4, F=5, G=6, H=7, I=8, J=9, K=10
+            // Mapping based on your spreadsheet structure:
+            // row[1]=FajrStart, row[6]=FajrJamat, etc.
             const prayers = [
                 { name: "Fajr", start: row[1], jamat: row[6] },
                 { name: "Sunrise", start: row[2], jamat: "Shorouk" },
                 { name: "Zuhr", start: row[3], jamat: row[7] },
                 { name: "Asr", start: row[4], jamat: row[8] },
-                { name: "Maghrib", start: row[5], jamat: row[9] }, // Magrib start often = jamat
+                { name: "Maghrib", start: row[5], jamat: row[9] },
                 { name: "Isha", start: row[5], jamat: row[10] }
             ];
 
-            let html = '<div class="card"><h2>Today\'s Prayer Journey</h2>';
+            let html = '<h2>Today\'s Prayer Journey</h2>';
+            html += '<div class="row header"><span>Prayer</span><span>Start</span><span>Jamat</span></div>';
+            
             prayers.forEach(p => {
                 html += `<div class="row"><span>${p.name}</span><span>${p.start}</span><span>${p.jamat}</span></div>`;
             });
-            html += '</div>';
+            
             document.getElementById('app').innerHTML = html;
         }
+
+        // Initialize
+        fetchTimes();
     </script>
 </body>
 </html>
