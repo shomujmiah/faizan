@@ -11,21 +11,31 @@
         // Use your published Google Script Web App URL here
         const GOOGLE_URL = 'https://script.google.com/macros/s/AKfycbzCKtE-mKx_X8OZMsvihtXKea9eBiHxstyWIhPNdnBFoFSZnAnz374V08gpm32W_4g3/exec?action=getData';
 
-        async function fetchTimes() {
-            try {
-                const response = await fetch(GOOGLE_URL);
-                const data = await response.json();
-                
-                // Render your data
-                document.getElementById('app').innerText = "Prayer Times Loaded!";
-                console.log(data);
-            } catch (error) {
-                document.getElementById('app').innerText = "Error loading data.";
-                console.error(error);
-            }
-        }
+        // This function gets called by the script we inject
+function handleData(response) {
+  console.log("Data successfully loaded:", response);
+  // CALL YOUR RENDERING FUNCTIONS HERE:
+  // renderDynamicTimelineRows(response.data);
+  // generateMonthlyCalendar(response.data, response.hijri);
+  document.getElementById('app').innerText = "Prayer Times Loaded Successfully!";
+}
 
-        fetchTimes();
+function fetchTimes() {
+  const script = document.createElement('script');
+  // Note the 'callback=handleData' parameter at the end
+  script.src = 'https://script.google.com/macros/s/AKfycbzCKtE-mKx_X8OZMsvihtXKea9eBiHxstyWIhPNdnBFoFSZnAnz374V08gpm32W_4g3/exec?action=getData&callback=handleData';
+  
+  script.onerror = () => {
+    document.getElementById('app').innerText = "Error loading data.";
+  };
+  
+  document.body.appendChild(script);
+}
+
+// Run it
+window.addEventListener('DOMContentLoaded', fetchTimes);
+
+   
     </script>
 </body>
 </html>
