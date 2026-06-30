@@ -182,25 +182,30 @@
         }
 
    // UPDATED INIT
-   async function initApp() {
-    const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(API_URL);
+  async function initApp() {
+    // Remove the proxy URL and go directly to Google
+    const API_URL = 'https://script.google.com/macros/s/AKfycbxZVQfNzONfCldm77yBhkPLeUvPi12D1rAfoYUXhRGX_e25fPBYXr29wAUfvbcqYAPq/exec?action=getData';
 
     try {
-        const response = await fetch(proxyUrl);
-        if (!response.ok) throw new Error("Network error");
+        const response = await fetch(API_URL, {
+            method: 'GET',
+            mode: 'cors', // Browser now allows this because of the headers we added above
+            redirect: 'follow'
+        });
+        
+        if (!response.ok) throw new Error("Network error " + response.status);
         
         const data = await response.json();
-        const rows = data.data; // Now 'rows' is defined
-        
-        // Render the UI
-        renderPrayerJourney(rows[30]); // Today's data
-        renderDetailedSchedule(rows[30]); // Default details to today
+        const rows = data.data;
+
+        renderPrayerJourney(rows[30]);
+        renderDetailedSchedule(rows[30]);
         setupNotifications(rows);
         startCountdown(rows);
         generateCalendar(rows);
     } catch (err) {
         console.error("Fetch Error:", err);
-        document.getElementById('app').innerHTML = "<h2>Data Load Error.</h2>";
+        document.getElementById('app').innerHTML = "<h2>Data Load Error. Check Console.</h2>";
     }
 }
 
