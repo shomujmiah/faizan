@@ -527,7 +527,9 @@ function saveUserSettings(userKey, settingsObject) {
 
   // 2. Fetch from your Cloudflare proxy endpoint
   // This /api endpoint is handled by the functions/api.js file you created
-  fetch('/api') 
+  fetch('https://script.google.com/macros/s/YOUR_GOOGLE_SCRIPT_ID/exec?action=getData')
+  .then(response => response.json())
+  .then(data => { ... });
   .then(response => {
     if (!response.ok) {
        // If it fails, log the status to see if it's 404 or 500
