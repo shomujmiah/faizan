@@ -513,7 +513,13 @@
         wireUpSettingsListeners();
       }
     }
-
+// Replace your saveUserSettings function in index.html with this:
+function saveUserSettings(userKey, settingsObject) {
+  fetch('/api', {
+    method: 'POST',
+    body: JSON.stringify({ action: 'saveSettings', key: userKey, settings: settingsObject })
+  }).then(r => r.json()).then(data => console.log("Saved", data));
+}
   function syncDatabaseContextPayload() {
   // 1. Show the loader
   var loader = document.getElementById('loader-overlay');
