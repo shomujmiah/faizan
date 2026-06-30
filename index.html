@@ -7,35 +7,32 @@
 <body>
     <div id="app">Loading Prayer Times...</div>
 
-    <script>
-        // Use your published Google Script Web App URL here
-        const GOOGLE_URL = 'https://script.google.com/macros/s/AKfycbzCKtE-mKx_X8OZMsvihtXKea9eBiHxstyWIhPNdnBFoFSZnAnz374V08gpm32W_4g3/exec?action=getData';
+  <script>
+  function handleData(response) {
+    if (response.error) {
+      console.error("Google Script Error:", response.error);
+      document.getElementById('app').innerText = "Google Script Error: " + response.error;
+    } else {
+      console.log("Data Received:", response);
+      document.getElementById('app').innerText = "Data received!";
+      // renderDynamicTimelineRows(response.data);
+    }
+  }
 
-        // This function gets called by the script we inject
-function handleData(response) {
-  console.log("Data successfully loaded:", response);
-  // CALL YOUR RENDERING FUNCTIONS HERE:
-  // renderDynamicTimelineRows(response.data);
-  // generateMonthlyCalendar(response.data, response.hijri);
-  document.getElementById('app').innerText = "Prayer Times Loaded Successfully!";
-}
+  function fetchTimes() {
+    console.log("Attempting to load...");
+    const script = document.createElement('script');
+    script.src = 'https://script.google.com/macros/s/AKfycbzCKtE-mKx_X8OZMsvihtXKea9eBiHxstyWIhPNdnBFoFSZnAnz374V08gpm32W_4g3/exec?action=getData&callback=handleData';
+    
+    script.onerror = () => {
+      console.error("Script injection failed.");
+      document.getElementById('app').innerText = "Error loading script.";
+    };
+    
+    document.body.appendChild(script);
+  }
 
-function fetchTimes() {
-  const script = document.createElement('script');
-  // Note the 'callback=handleData' parameter at the end
-  script.src = 'https://script.google.com/macros/s/AKfycbzCKtE-mKx_X8OZMsvihtXKea9eBiHxstyWIhPNdnBFoFSZnAnz374V08gpm32W_4g3/exec?action=getData&callback=handleData';
-  
-  script.onerror = () => {
-    document.getElementById('app').innerText = "Error loading data.";
-  };
-  
-  document.body.appendChild(script);
-}
-
-// Run it
-window.addEventListener('DOMContentLoaded', fetchTimes);
-
-   
-    </script>
+  window.addEventListener('DOMContentLoaded', fetchTimes);
+</script>
 </body>
 </html>
