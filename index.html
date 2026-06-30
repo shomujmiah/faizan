@@ -724,12 +724,12 @@
       renderDynamicTimelineRows(globalRawMasterMatrix);
       var activeSel = document.querySelector('.cal-cell.is-selected');
       if (activeSel) inspectTargetCalendarDay(parseInt(activeSel.querySelector('.g-num').innerText, 10));
-      google.script.run.saveUserSettings(activeServerAssignedKey, { is24h: isChecked });
+     
     }
 
     function handleStagingFlip(e) {
       var isChecked = e.target.checked; if (serverSettingsCache) serverSettingsCache.useStaging = isChecked;
-      google.script.run.saveUserSettings(activeServerAssignedKey, { useStaging: isChecked });
+     
     }
 
     function updateDynamicSkyTheme(prayerName) {
