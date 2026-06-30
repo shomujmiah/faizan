@@ -9,13 +9,18 @@
     <style>
         :root { --bg: #050b14; --card: #0f172a; --accent: #34d399; --text: #ffffff; }
         body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; padding: 20px; }
-        .card { background: var(--card); border-radius: 20px; padding: 20px; max-width: 400px; margin: 0 auto; }
+        .card { background: var(--card); border-radius: 20px; padding: 20px; max-width: 400px; margin: 0 auto; margin-bottom: 20px; text-align: center; }
         .row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #1e293b; }
         .header { font-weight: bold; color: var(--accent); }
         button { margin-top: 20px; padding: 10px; background: var(--accent); border: none; border-radius: 5px; cursor: pointer; }
     </style>
 </head>
 <body>
+
+    <div id="countdown" class="card">
+        <h3 id="next-prayer-name">Loading Next Prayer...</h3>
+        <h1 id="timer">00:00:00</h1>
+    </div>
 
     <div id="app" class="card">
         <h2>Loading Prayer Times...</h2>
@@ -25,28 +30,20 @@
         const API_URL = 'https://script.google.com/macros/s/AKfycbxZVQfNzONfCldm77yBhkPLeUvPi12D1rAfoYUXhRGX_e25fPBYXr29wAUfvbcqYAPq/exec?action=getData';
 
         async function initApp() {
-    const API_URL = 'https://script.google.com/macros/s/AKfycbxZVQfNzONfCldm77yBhkPLeUvPi12D1rAfoYUXhRGX_e25fPBYXr29wAUfvbcqYAPq/exec?action=getData';
-
-    try {
-        const response = await fetch(API_URL);
-        const text = await response.text(); // Get raw text first to debug
-        
-        let data;
-        try {
-            data = JSON.parse(text); // Try to parse it
-        } catch (e) {
-            console.error("Server did not send JSON. It sent:", text);
-            document.getElementById('app').innerHTML = "<h2>Error: Server returned HTML instead of JSON.</h2>";
-            return;
+            try {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+                const todayRow = data.data[30]; 
+                
+                renderPrayerJourney(todayRow);
+                setupNotifications(data.data);
+                startCountdown(data.data);
+            } catch (err) {
+                console.error("Fetch Error:", err);
+                document.getElementById('app').innerHTML = "<h2>Error loading data.</h2>";
+            }
         }
 
-        const todayRow = data.data[30]; 
-        renderPrayerJourney(todayRow);
-        setupNotifications(data.data);
-    } catch (err) {
-        console.error("Fetch Error:", err);
-    }
-}
         function renderPrayerJourney(row) {
             const prayers = [
                 { name: "Fajr", start: row[1], jamat: row[6] },
@@ -56,10 +53,7 @@
                 { name: "Maghrib", start: "-", jamat: row[9] },
                 { name: "Isha", start: row[5], jamat: row[10] }
             ];
-<div id="countdown" class="card" style="margin-bottom: 20px; text-align: center;">
-    <h3 id="next-prayer-name">Loading Next Prayer...</h3>
-    <h1 id="timer">00:00:00</h1>
-</div>
+
             let html = '<h2>Today\'s Prayer Journey</h2>';
             html += '<div class="row header"><span>Prayer</span><span>Start</span><span>Jamat</span></div>';
             prayers.forEach(p => {
@@ -68,47 +62,46 @@
             html += `<button onclick="testNotification()">Enable Notifications</button>`;
             document.getElementById('app').innerHTML = html;
         }
-function startCountdown(rows) {
-    const todayRow = rows[30]; // Keep your index
-    // Mapping start times: Fajr(B), Sunrise(C), Zuhr(D), Asr(E), Isha(F)
-    const prayerStarts = [
-        { name: "Fajr", time: todayRow[1] },
-        { name: "Sunrise", time: todayRow[2] },
-        { name: "Zuhr", time: todayRow[3] },
-        { name: "Asr", time: todayRow[4] },
-        { name: "Isha", time: todayRow[5] }
-    ];
 
-    setInterval(() => {
-        const now = new Date();
-        let nextPrayer = null;
+        function startCountdown(rows) {
+            const todayRow = rows[30];
+            const prayerStarts = [
+                { name: "Fajr", time: todayRow[1] },
+                { name: "Sunrise", time: todayRow[2] },
+                { name: "Zuhr", time: todayRow[3] },
+                { name: "Asr", time: todayRow[4] },
+                { name: "Isha", time: todayRow[5] }
+            ];
 
-        for (let p of prayerStarts) {
-            const [h, m] = p.time.split(':').map(Number);
-            let prayerDate = new Date();
-            prayerDate.setHours(h, m, 0, 0);
+            setInterval(() => {
+                const now = new Date();
+                let nextPrayer = null;
 
-            if (prayerDate > now) {
-                nextPrayer = { name: p.name, date: prayerDate };
-                break; // Found the first one in the future
-            }
+                for (let p of prayerStarts) {
+                    const [h, m] = p.time.split(':').map(Number);
+                    let prayerDate = new Date();
+                    prayerDate.setHours(h, m, 0, 0);
+
+                    if (prayerDate > now) {
+                        nextPrayer = { name: p.name, date: prayerDate };
+                        break;
+                    }
+                }
+
+                if (nextPrayer) {
+                    const diff = nextPrayer.date - now;
+                    const h = Math.floor(diff / 3600000);
+                    const m = Math.floor((diff % 3600000) / 60000);
+                    const s = Math.floor((diff % 60000) / 1000);
+                    document.getElementById('next-prayer-name').innerText = `Next: ${nextPrayer.name}`;
+                    document.getElementById('timer').innerText = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+                } else {
+                    document.getElementById('next-prayer-name').innerText = "All prayers completed";
+                    document.getElementById('timer').innerText = "00:00:00";
+                }
+            }, 1000);
         }
 
-        if (nextPrayer) {
-            const diff = nextPrayer.date - now;
-            const h = Math.floor(diff / 3600000);
-            const m = Math.floor((diff % 3600000) / 60000);
-            const s = Math.floor((diff % 60000) / 1000);
-            
-            document.getElementById('next-prayer-name').innerText = `Next: ${nextPrayer.name}`;
-            document.getElementById('timer').innerText = 
-                `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-        } else {
-            document.getElementById('next-prayer-name').innerText = "All prayers for today completed";
-            document.getElementById('timer').innerText = "00:00:00";
-        }
-    }, 1000); // Updates every second
-}
         function testNotification() {
             if (!("Notification" in window)) return;
             Notification.requestPermission().then(p => {
@@ -116,37 +109,34 @@ function startCountdown(rows) {
             });
         }
 
-       function setupNotifications(rows) {
-    const now = new Date();
-    
-    // Process today's row (index 30)
-    const todayRow = rows[30];
-    const jamatTimes = [todayRow[6], todayRow[7], todayRow[8], todayRow[9], todayRow[10]];
-    
-    jamatTimes.forEach(timeStr => {
-        if (!timeStr || timeStr === "-") return;
-        
-        const [h, m] = timeStr.split(':').map(Number);
-        
-        // Calculate the notification time (Jamat time minus 15 mins)
-        let alarmDate = new Date();
-        alarmDate.setHours(h, m - 15, 0, 0);
+        function setupNotifications(rows) {
+            const now = new Date();
+            const todayRow = rows[30];
+            const prayerMap = [
+                { name: "Fajr", time: todayRow[6] },
+                { name: "Zuhr", time: todayRow[7] },
+                { name: "Asr", time: todayRow[8] },
+                { name: "Maghrib", time: todayRow[9] },
+                { name: "Isha", time: todayRow[10] }
+            ];
+            
+            prayerMap.forEach(p => {
+                if (!p.time || p.time === "-") return;
+                const [h, m] = p.time.split(':').map(Number);
+                let alarmDate = new Date();
+                alarmDate.setHours(h, m - 15, 0, 0);
 
-        // Only schedule if the alarm time is in the future
-        if (alarmDate > now) {
-            const delay = alarmDate.getTime() - now.getTime();
-            
-            console.log(`Scheduling alert for ${h}:${m} in ${Math.round(delay/60000)} minutes.`);
-            
-            setTimeout(() => {
-                new Notification("Prayer Reminder", { 
-                    body: "Jamat starts in 15 minutes!",
-                    icon: "https://cdn-icons-png.flaticon.com/512/3203/3203875.png" 
-                });
-            }, delay);
+                if (alarmDate > now) {
+                    const delay = alarmDate.getTime() - now.getTime();
+                    setTimeout(() => {
+                        new Notification("Prayer Reminder", { 
+                            body: `${p.name} Jamat starts in 15 minutes!`,
+                            icon: "https://cdn-icons-png.flaticon.com/512/3203/3203875.png" 
+                        });
+                    }, delay);
+                }
+            });
         }
-    });
-}
 
         initApp();
     </script>
