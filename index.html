@@ -55,36 +55,46 @@
     </div>
 
     <script>
-        // REPLACE THIS URL WITH YOUR WORKING DEPLOYMENT URL
-// This prefixes your URL with a service that handles the CORS headers for you
-const API_URL = 'https://corsproxy.io/?' + encodeURIComponent('https://script.google.com/macros/s/AKfycbxZVQfNzONfCldm77yBhkPLeUvPi12D1rAfoYUXhRGX_e25fPBYXr29wAUfvbcqYAPq/exec?action=getData');
-        
-        function showTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
-            document.getElementById(tabId + '-view').style.display = 'block';
-        }
+ const API_URL = 'https://script.google.com/macros/s/AKfycbxZVQfNzONfCldm77yBhkPLeUvPi12D1rAfoYUXhRGX_e25fPBYXr29wAUfvbcqYAPq/exec?action=getData';
 
-        function generateCalendar(rows) {
-            const grid = document.getElementById('calendar-grid');
-            rows.forEach((row, idx) => {
-                if (idx === 0) return;
-                const day = document.createElement('div');
-                day.className = 'calendar-day';
-                day.innerText = idx;
-                day.onclick = () => renderDetailedSchedule(row);
-                grid.appendChild(day);
+    // 1. ALL FUNCTION DEFINITIONS GO HERE FIRST
+    function renderPrayerJourney(row) {
+        const prayers = [
+            { name: "Fajr", start: row[1], jamat: row[6] },
+            { name: "Zuhr", start: row[3], jamat: row[7] },
+            { name: "Asr", start: row[4], jamat: row[8] },
+            { name: "Maghrib", start: "-", jamat: row[9] },
+            { name: "Isha", start: row[5], jamat: row[10] }
+        ];
+        let html = '<div class="row header"><span>Prayer</span><span>Start</span><span>Jamat</span></div>';
+        prayers.forEach(p => {
+            html += `<div class="row"><span>${p.name}</span><span>${p.start}</span><span>${p.jamat}</span></div>`;
+        });
+        document.getElementById('prayer-list').innerHTML = html;
+    }
+
+  function setupNotifications(rows) {
+            const todayRow = rows[30];
+            const prayerMap = [
+                { name: "Fajr", time: todayRow[6] }, { name: "Zuhr", time: todayRow[7] },
+                { name: "Asr", time: todayRow[8] }, { name: "Maghrib", time: todayRow[9] },
+                { name: "Isha", time: todayRow[10] }
+            ];
+            
+            prayerMap.forEach(p => {
+                if (!p.time || p.time === "-") return;
+                const [h, m] = p.time.split(':').map(Number);
+                let alarm = new Date();
+                alarm.setHours(h, m - 15, 0, 0);
+
+                if (alarm > new Date()) {
+                    setTimeout(() => {
+                        new Notification("Prayer Reminder", { body: `${p.name} Jamat starts in 15 minutes!` });
+                    }, alarm - new Date());
+                }
             });
         }
-
-        function renderDetailedSchedule(row) {
-            document.getElementById('salah-details').innerHTML = `
-                <h3>Details</h3>
-                <div class="row"><span>Fajr</span><span>${row[1]}</span><span>${row[6]}</span></div>
-                <div class="row"><span>Zuhr</span><span>${row[3]}</span><span>${row[7]}</span></div>
-                <div class="row"><span>Asr</span><span>${row[4]}</span><span>${row[8]}</span></div>
-            `;
-        }
-        function startCountdown(rows) {
+ function startCountdown(rows) {
             const row = rows[30];
             const jamatStarts = [
                 { name: "Fajr Jamat", time: row[6] },
@@ -121,27 +131,35 @@ const API_URL = 'https://corsproxy.io/?' + encodeURIComponent('https://script.go
             }, 1000);
         }
 
-        function setupNotifications(rows) {
-            const todayRow = rows[30];
-            const prayerMap = [
-                { name: "Fajr", time: todayRow[6] }, { name: "Zuhr", time: todayRow[7] },
-                { name: "Asr", time: todayRow[8] }, { name: "Maghrib", time: todayRow[9] },
-                { name: "Isha", time: todayRow[10] }
-            ];
-            
-            prayerMap.forEach(p => {
-                if (!p.time || p.time === "-") return;
-                const [h, m] = p.time.split(':').map(Number);
-                let alarm = new Date();
-                alarm.setHours(h, m - 15, 0, 0);
-
-                if (alarm > new Date()) {
-                    setTimeout(() => {
-                        new Notification("Prayer Reminder", { body: `${p.name} Jamat starts in 15 minutes!` });
-                    }, alarm - new Date());
-                }
+      function generateCalendar(rows) {
+            const grid = document.getElementById('calendar-grid');
+            rows.forEach((row, idx) => {
+                if (idx === 0) return;
+                const day = document.createElement('div');
+                day.className = 'calendar-day';
+                day.innerText = idx;
+                day.onclick = () => renderDetailedSchedule(row);
+                grid.appendChild(day);
             });
         }
+
+        function renderDetailedSchedule(row) {
+            document.getElementById('salah-details').innerHTML = `
+                <h3>Details</h3>
+                <div class="row"><span>Fajr</span><span>${row[1]}</span><span>${row[6]}</span></div>
+                <div class="row"><span>Zuhr</span><span>${row[3]}</span><span>${row[7]}</span></div>
+                <div class="row"><span>Asr</span><span>${row[4]}</span><span>${row[8]}</span></div>
+            `;
+        }
+       
+
+        
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+            document.getElementById(tabId + '-view').style.display = 'block';
+        }
+
+        
 
         function testNotification() {
             Notification.requestPermission().then(p => {
@@ -149,26 +167,25 @@ const API_URL = 'https://corsproxy.io/?' + encodeURIComponent('https://script.go
             });
         }
 
-        // 2. The initApp function itself
     async function initApp() {
         try {
-            const response = await fetch(API_URL, { mode: 'cors', redirect: 'follow' });
+            // Using a CORS proxy to bypass the Google redirect block
+            const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(API_URL);
+            const response = await fetch(proxyUrl);
             const data = await response.json();
-            const todayRow = data.data[30]; 
             
-            renderPrayerJourney(todayRow); // Now these exist!
+            renderPrayerJourney(data.data[30]);
             setupNotifications(data.data);
             startCountdown(data.data);
             generateCalendar(data.data);
         } catch (err) {
             console.error("Fetch Error:", err);
-            document.getElementById('app').innerHTML = "<h2>Error loading data.</h2>";
+            document.getElementById('app').innerHTML = "<h2>Error loading data. Check Console.</h2>";
         }
     }
 
-    // 3. ONLY NOW do you call the initialization
+    // 3. EVENT LISTENER IS THE VERY LAST THING
     document.addEventListener('DOMContentLoaded', initApp);
-        
     </script>
 </body>
 </html>
