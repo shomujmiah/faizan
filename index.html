@@ -204,16 +204,26 @@ input[type=checkbox]:checked::before { transform: translateX(25px); }
     const grid = document.getElementById('calendar-grid');
     grid.innerHTML = ''; 
 
+    // Find what day of the week the first entry falls on (0=Sun, 1=Mon...)
+    const firstDate = new Date(rows[1][0]);
+    const dayOfWeek = (firstDate.getDay() + 6) % 7; // Map so Mon=0, Sun=6
+
+    // Add empty spacers for days before the 1st
+    for (let i = 0; i < dayOfWeek; i++) {
+        grid.appendChild(document.createElement('div'));
+    }
+
     rows.forEach((row, idx) => {
         if (idx === 0 || !row[0]) return; 
-
+        
         const dayDiv = document.createElement('div');
         dayDiv.className = 'calendar-day';
-        // Only show the day number
         dayDiv.innerHTML = `<strong>${idx}</strong>`;
         
-        // Match today (June 30 is index 30)
-        if (idx === 30) dayDiv.classList.add('selected');
+        // Auto-select today (assuming today is index 30)
+        if (idx === 30) {
+            dayDiv.classList.add('selected');
+        }
 
         dayDiv.onclick = () => {
             document.querySelectorAll('.calendar-day').forEach(d => d.classList.remove('selected'));
