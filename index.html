@@ -171,20 +171,28 @@
 
    // UPDATED INIT
     async function initApp() {
-        try {
-            const response = await fetch(API_URL, { mode: 'cors', redirect: 'follow' });
-            const data = await response.json();
-            
-            // Render logic
-            renderPrayerJourney(data.data[30]);
-            generateCalendar(data.data);
-            startCountdown(data.data);
-        } catch (err) {
-            console.error(err);
-            document.getElementById('app').innerHTML = "<h2>Check your Deployment Settings.</h2>";
-        }
+    // Now you can use your direct Google URL without the proxy prefix!
+    const API_URL = 'https://script.google.com/macros/s/AKfycbxZVQfNzONfCldm77yBhkPLeUvPi12D1rAfoYUXhRGX_e25fPBYXr29wAUfvbcqYAPq/exec?action=getData';
+
+    try {
+        const response = await fetch(API_URL, {
+            method: 'GET',
+            mode: 'cors',
+            redirect: 'follow'
+        });
+        
+        if (!response.ok) throw new Error("HTTP error " + response.status);
+        
+        const data = await response.json();
+        renderPrayerJourney(data.data[30]);
+        setupNotifications(data.data);
+        startCountdown(data.data);
+        generateCalendar(data.data);
+    } catch (err) {
+        console.error("Fetch Error:", err);
+        document.getElementById('app').innerHTML = "<h2>Data Load Error.</h2>";
     }
-    
+}
 
     // 3. EVENT LISTENER IS THE VERY LAST THING
     document.addEventListener('DOMContentLoaded', initApp);
