@@ -2,7 +2,7 @@
 <html>
 <head>
     <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#050b14">
+    <meta name="theme-color" content="#050b14">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Faizan Portal</title>
@@ -12,6 +12,7 @@
         .card { background: var(--card); border-radius: 20px; padding: 20px; max-width: 400px; margin: 0 auto; }
         .row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #1e293b; }
         .header { font-weight: bold; color: var(--accent); }
+        button { margin-top: 20px; padding: 10px; background: var(--accent); border: none; border-radius: 5px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -21,17 +22,16 @@
     </div>
 
     <script>
-        // Paste your Google Web App URL here
         const API_URL = 'https://script.google.com/macros/s/AKfycbxZVQfNzONfCldm77yBhkPLeUvPi12D1rAfoYUXhRGX_e25fPBYXr29wAUfvbcqYAPq/exec?action=getData';
 
-        async function fetchTimes() {
+        async function initApp() {
             try {
                 const response = await fetch(API_URL);
                 const data = await response.json();
-                
-                // Assuming today is June 30th, which is the 30th index of data (Row 31)
                 const todayRow = data.data[30]; 
+                
                 renderPrayerJourney(todayRow);
+                setupNotifications(data.data);
             } catch (err) {
                 console.error(err);
                 document.getElementById('app').innerHTML = "<h2>Error loading data.</h2>";
@@ -39,8 +39,6 @@
         }
 
         function renderPrayerJourney(row) {
-            // Mapping based on your spreadsheet structure:
-            // row[1]=FajrStart, row[6]=FajrJamat, etc.
             const prayers = [
                 { name: "Fajr", start: row[1], jamat: row[6] },
                 { name: "Sunrise", start: row[2], jamat: "-" },
@@ -52,67 +50,36 @@
 
             let html = '<h2>Today\'s Prayer Journey</h2>';
             html += '<div class="row header"><span>Prayer</span><span>Start</span><span>Jamat</span></div>';
-            
             prayers.forEach(p => {
                 html += `<div class="row"><span>${p.name}</span><span>${p.start}</span><span>${p.jamat}</span></div>`;
             });
-            
+            html += `<button onclick="testNotification()">Enable Notifications</button>`;
             document.getElementById('app').innerHTML = html;
         }
 
-        // Initialize
-        fetchTimes();
-        // Register Service Worker for PWA functionality
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('data:text/javascript,self.addEventListener("fetch",()=>{});')
-        .then(() => console.log("PWA Service Worker Registered"));
-}
-        function requestNotificationPermission() {
-    if ("Notification" in window) {
-        Notification.requestPermission().then(permission => {
-            if (permission === "granted") {
-                console.log("Notifications enabled");
-            }
-        });
-    }
-}
+        function testNotification() {
+            if (!("Notification" in window)) return;
+            Notification.requestPermission().then(p => {
+                if (p === "granted") new Notification("Faizan Portal", { body: "Notifications are now active!" });
+            });
+        }
 
-function checkPrayerTimes(rows) {
-    const now = new Date();
-    const currentHour = now.getHours();
-    const currentMinute = now.getMinutes();
-
-    rows.forEach(row => {
-        // row[7] is Zuhr Jamat, row[8] is Asr, etc.
-        // Convert "14:00" string to hour/minute
-        const jamatTimes = [row[6], row[7], row[8], row[9], row[10]];
-        
-        jamatTimes.forEach(timeStr => {
-            if (!timeStr || timeStr === "Shorouk") return;
-            const [h, m] = timeStr.split(':').map(Number);
-            
-            // Calculate 15 mins before
-            let alarmM = m - 15;
-            let alarmH = h;
-            if (alarmM < 0) { alarmM += 60; alarmH -= 1; }
-
-            if (currentHour === alarmH && currentMinute === alarmM) {
-                new Notification("Prayer Reminder", {
-                    body: "Jamat starts in 15 minutes!",
-                    icon: "https://cdn-icons-png.flaticon.com/512/3203/3203875.png"
+        function setupNotifications(rows) {
+            setInterval(() => {
+                const now = new Date();
+                rows.forEach(row => {
+                    [row[6], row[7], row[8], row[9], row[10]].forEach(timeStr => {
+                        if (!timeStr || timeStr.length < 5) return;
+                        const [h, m] = timeStr.split(':').map(Number);
+                        if (now.getHours() === h && now.getMinutes() === (m - 15)) {
+                            new Notification("Prayer Reminder", { body: "Jamat starts in 15 minutes!" });
+                        }
+                    });
                 });
-            }
-        });
-    });
-}
+            }, 60000);
+        }
 
-// Call these inside your fetchTimes function
-fetch(API_URL)
-    .then(res => res.json())
-    .then(data => {
-        requestNotificationPermission();
-        setInterval(() => checkPrayerTimes(data.data), 60000); // Check every minute
-    });
+        initApp();
     </script>
 </body>
 </html>
