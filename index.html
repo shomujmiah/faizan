@@ -280,8 +280,11 @@ if ('serviceWorker' in navigator) {
         btn.disabled = true;
 
         try {
-            // Call your Apps Script endpoint
-            const response = await fetch(API_URL + '&action=ocrProcess', {
+            // Add this as a separate variable
+const BASE_URL = 'https://script.google.com/macros/s/AKfycbxZVQfNzONfCldm77yBhkPLeUvPi12D1rAfoYUXhRGX_e25fPBYXr29wAUfvbcqYAPq/exec';
+
+// Update handleManualUpload to use BASE_URL, not API_URL
+const response = await fetch(BASE_URL + '?action=ocrProcess', {
                 method: 'POST',
                 body: JSON.stringify({ image: base64 })
             });
