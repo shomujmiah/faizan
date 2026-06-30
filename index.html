@@ -13,6 +13,12 @@
         .row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #1e293b; }
         .header { font-weight: bold; color: var(--accent); }
         button { margin-top: 20px; padding: 10px; background: var(--accent); border: none; border-radius: 5px; cursor: pointer; }
+        /* Add this to your <style> block to align the times perfectly */
+    .row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #1e293b; align-items: center; }
+    .row span { flex: 1; text-align: center; }
+    .row span:first-child { text-align: left; }
+    .row span:last-child { text-align: right; }
+    .header { font-weight: bold; color: var(--accent); }
     </style>
 </head>
 <body>
@@ -63,45 +69,46 @@
             document.getElementById('app').innerHTML = html;
         }
 
-        function startCountdown(rows) {
-            const todayRow = rows[30];
-            const prayerStarts = [
-                { name: "Fajr", time: todayRow[1] },
-                { name: "Sunrise", time: todayRow[2] },
-                { name: "Zuhr", time: todayRow[3] },
-                { name: "Asr", time: todayRow[4] },
-                { name: "Isha", time: todayRow[5] }
-            ];
+        // UPDATE: Countdown to use Jamat times
+function startCountdown(rows) {
+    const todayRow = rows[30];
+    const jamatStarts = [
+        { name: "Fajr Jamat", time: todayRow[6] },
+        { name: "Zuhr Jamat", time: todayRow[7] },
+        { name: "Asr Jamat", time: todayRow[8] },
+        { name: "Maghrib Jamat", time: todayRow[9] },
+        { name: "Isha Jamat", time: todayRow[10] }
+    ];
 
-            setInterval(() => {
-                const now = new Date();
-                let nextPrayer = null;
+    setInterval(() => {
+        const now = new Date();
+        let nextJamat = null;
 
-                for (let p of prayerStarts) {
-                    const [h, m] = p.time.split(':').map(Number);
-                    let prayerDate = new Date();
-                    prayerDate.setHours(h, m, 0, 0);
+        for (let j of jamatStarts) {
+            if (j.time === "-") continue;
+            const [h, m] = j.time.split(':').map(Number);
+            let jamatDate = new Date();
+            jamatDate.setHours(h, m, 0, 0);
 
-                    if (prayerDate > now) {
-                        nextPrayer = { name: p.name, date: prayerDate };
-                        break;
-                    }
-                }
-
-                if (nextPrayer) {
-                    const diff = nextPrayer.date - now;
-                    const h = Math.floor(diff / 3600000);
-                    const m = Math.floor((diff % 3600000) / 60000);
-                    const s = Math.floor((diff % 60000) / 1000);
-                    document.getElementById('next-prayer-name').innerText = `Next: ${nextPrayer.name}`;
-                    document.getElementById('timer').innerText = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-                } else {
-                    document.getElementById('next-prayer-name').innerText = "All prayers completed";
-                    document.getElementById('timer').innerText = "00:00:00";
-                }
-            }, 1000);
+            if (jamatDate > now) {
+                nextJamat = { name: j.name, date: jamatDate };
+                break;
+            }
         }
 
+        if (nextJamat) {
+            const diff = nextJamat.date - now;
+            const h = Math.floor(diff / 3600000);
+            const m = Math.floor((diff % 3600000) / 60000);
+            const s = Math.floor((diff % 60000) / 1000);
+            document.getElementById('next-prayer-name').innerText = `Next: ${nextJamat.name}`;
+            document.getElementById('timer').innerText = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+        } else {
+            document.getElementById('next-prayer-name').innerText = "All Jamats completed";
+            document.getElementById('timer').innerText = "00:00:00";
+        }
+    }, 1000);
+}
         function testNotification() {
             if (!("Notification" in window)) return;
             Notification.requestPermission().then(p => {
