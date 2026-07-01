@@ -208,12 +208,12 @@ if ('serviceWorker' in navigator) {
     setInterval(() => {
         const now = new Date();
         const next = jamats.find(j => j.t !== "-" && new Date().setHours(...j.t.split(':'),0,0) > now);
-        // Inside startCountdown's setInterval:
-        document.getElementById('prayer-text').innerText = `Next: ${next.n}`;
+        
         if (next) {
            
             const diff = new Date().setHours(...next.t.split(':'),0,0) - now;
-            //document.getElementById('next-prayer-name').innerText = `Next: ${next.n}`;
+            // Inside startCountdown's setInterval:
+        document.getElementById('prayer-text').innerText = `Next: ${next.n}`;
             document.getElementById('timer').innerText = new Date(diff).toISOString().substr(11, 8);
             
             // Only update the UI if the active prayer has actually changed
