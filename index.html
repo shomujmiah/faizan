@@ -395,8 +395,8 @@ async function getHijriDate(dateString) {
                 const data = await res.json();
                 const rows = data.data;
 
-                const spinner = document.getElementById('spinner-container');
-        if (spinner) spinner.remove();
+               // const spinner = document.getElementById('spinner-container');
+       // if (spinner) spinner.remove();
                 
                // 2. Proceed with rendering
         if (rows[30] && rows[30][0]) {
