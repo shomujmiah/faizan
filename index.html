@@ -393,30 +393,42 @@ async function getHijriDate(dateString) {
     }
 }
         async function initApp() {
-            try {
-                // document.getElementById('next-prayer-name').innerHTML = '';
-                const res = await fetch(API_URL);
-                const data = await res.json();
-                const rows = data.data;
+    try {
+               
+        const res = await fetch(API_URL);
+        const data = await res.json();
+        const rows = data.data;
 
-                const spinner = document.getElementById('spinner-container');
-                if (spinner) spinner.remove();
-                
-               // 2. Proceed with rendering
-        if (rows[30] && rows[30][0]) {
-            renderPrayerJourney(rows[30]);
-            renderDetailedSchedule(rows[30]);
-        }
-                
-                generateCalendar(rows);
-                startCountdown(rows);
-                setupNotifications(rows);
-                // Load saved settings
-                document.getElementById('time-toggle').checked = localStorage.getItem('use24Hour') === 'true';
-                document.getElementById('notify-toggle').checked = localStorage.getItem('notificationsEnabled') === 'true';
-            } catch (err) { console.error(err); }
-        }
+        // 1. CLEAR THE SPINNER
+        const spinner = document.getElementById('spinner-container');
+        if (spinner) spinner.remove();
 
+        // 2. FIND TODAY'S ROW
+        // Format today as YYYY-MM-DD to match your spreadsheet format
+        const today = new Date();
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        
+        // Find the row where row[0] matches today's date string
+        const todayRow = rows.find(r => r[0] === todayStr) || rows[1]; // Fallback to rows[1] if not found
+
+        // 3. RENDER USING THE DYNAMIC ROW
+        if (todayRow) {
+            renderPrayerJourney(todayRow);
+            renderDetailedSchedule(todayRow);
+        }
+        
+        generateCalendar(rows);
+        startCountdown(rows); // Ensure this also uses todayRow if needed
+        setupNotifications(rows);
+        
+        document.getElementById('time-toggle').checked = localStorage.getItem('use24Hour') === 'true';
+        document.getElementById('notify-toggle').checked = localStorage.getItem('notificationsEnabled') === 'true';
+        
+    } catch (err) { 
+        console.error(err); 
+        document.getElementById('next-prayer-name').innerText = "Failed to load times.";
+    }
+}
         document.addEventListener('DOMContentLoaded', initApp);
     </script>
 </body>
