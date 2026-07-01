@@ -403,8 +403,6 @@ async function getHijriDate(dateString) {
 }
      async function initApp() {
     try {
-        updateTopDate();
-        
         const res = await fetch(API_URL);
         const data = await res.json();
         const rows = data.data;
