@@ -393,6 +393,10 @@ async function getHijriDate(dateString) {
                 const res = await fetch(API_URL);
                 const data = await res.json();
                 const rows = data.data;
+const prayerEl = document.getElementById('next-prayer-name');
+        prayerEl.innerHTML = ''; // This wipes out the dot-spinner
+
+                
                 renderPrayerJourney(rows[30]);
                 renderDetailedSchedule(rows[30]);
                 generateCalendar(rows);
