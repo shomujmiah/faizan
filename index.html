@@ -20,7 +20,9 @@
     border-radius: 8px;
     font-weight: bold;
 }
-
+.hidden {
+    display: none !important;
+}
 /* Container for the dot spinner */
 .dot-spinner {
     position: relative;
@@ -407,9 +409,9 @@ async function getHijriDate(dateString) {
         const data = await res.json();
         const rows = data.data;
 
-        // 1. CLEAR THE SPINNER: Target the parent <p> and wipe everything inside it
-        const prayerContainer = document.getElementById('next-prayer-name');
-        prayerContainer.innerHTML = '<span id="prayer-text"></span>'; 
+        // TARGETED HIDE: This doesn't mess with innerHTML, it just kills the visibility
+        const spinner = document.getElementById('spinner-container');
+        if (spinner) spinner.classList.add('hidden');
 
         // 2. Proceed with rendering
         if (rows[30] && rows[30][0]) {
