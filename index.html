@@ -73,19 +73,18 @@
     </style>
 </head>
 <body>
-
-    
-
     <div id="home-view" class="tab-content">
         <div class="glass-card" style="text-align: center;">
             <p style="color: var(--accent); font-weight: bold;">NEXT JAMAA'H</p>
             <h1 id="timer">00:00:00</h1>
             <p id="next-prayer-name">
-    <div class="dot-spinner">
-        <div></div><div></div><div></div><div></div>
-        <div></div><div></div><div></div><div></div>
-    </div> 
-    
+    <span id="spinner-container">
+        <div class="dot-spinner">
+            <div></div><div></div><div></div><div></div>
+            <div></div><div></div><div></div><div></div>
+        </div>
+    </span>
+    <span id="prayer-text"></span>
 </p>
         </div>
         <div id="app" class="glass-card">
@@ -209,11 +208,12 @@ if ('serviceWorker' in navigator) {
     setInterval(() => {
         const now = new Date();
         const next = jamats.find(j => j.t !== "-" && new Date().setHours(...j.t.split(':'),0,0) > now);
-        
+        // Inside startCountdown's setInterval:
+        document.getElementById('prayer-text').innerText = `Next: ${next.n}`;
         if (next) {
            
             const diff = new Date().setHours(...next.t.split(':'),0,0) - now;
-            document.getElementById('next-prayer-name').innerText = `Next: ${next.n}`;
+            //document.getElementById('next-prayer-name').innerText = `Next: ${next.n}`;
             document.getElementById('timer').innerText = new Date(diff).toISOString().substr(11, 8);
             
             // Only update the UI if the active prayer has actually changed
@@ -390,11 +390,14 @@ async function getHijriDate(dateString) {
 }
         async function initApp() {
             try {
-                document.getElementById('next-prayer-name').innerHTML = '';
+                // document.getElementById('next-prayer-name').innerHTML = '';
                 const res = await fetch(API_URL);
                 const data = await res.json();
                 const rows = data.data;
 
+                const spinner = document.getElementById('spinner-container');
+        if (spinner) spinner.remove();
+                
                // 2. Proceed with rendering
         if (rows[30] && rows[30][0]) {
             renderPrayerJourney(rows[30]);
