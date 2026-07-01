@@ -12,8 +12,50 @@
             --accent: #34d399;
         }
         body { background: var(--bg-color); color: #ffffff; font-family: sans-serif; margin: 0; padding-bottom: 100px; }
-        .row.active { background-color: var(--accent); color: #050b14; border-radius: 8px; font-weight: bold; }
-        .hidden { display: none !important; }
+
+/* Solid highlight (no flashing) */
+.row.active {
+    background-color: var(--accent);
+    color: #050b14;
+    border-radius: 8px;
+    font-weight: bold;
+}
+.hidden {
+    display: none !important;
+}
+/* Container for the dot spinner */
+.dot-spinner {
+    position: relative;
+    width: 20px;
+    height: 20px;
+    display: inline-block;
+    animation: rotate-group 1.2s linear infinite;
+}
+
+/* Individual dots */
+.dot-spinner div {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: var(--accent);
+    border-radius: 50%;
+    transform-origin: 10px 10px;
+}
+
+/* Position dots in a circle */
+.dot-spinner div:nth-child(1) { transform: rotate(0deg) translate(8px); }
+.dot-spinner div:nth-child(2) { transform: rotate(45deg) translate(8px); }
+.dot-spinner div:nth-child(3) { transform: rotate(90deg) translate(8px); }
+.dot-spinner div:nth-child(4) { transform: rotate(135deg) translate(8px); }
+.dot-spinner div:nth-child(5) { transform: rotate(180deg) translate(8px); }
+.dot-spinner div:nth-child(6) { transform: rotate(225deg) translate(8px); }
+.dot-spinner div:nth-child(7) { transform: rotate(270deg) translate(8px); }
+.dot-spinner div:nth-child(8) { transform: rotate(315deg) translate(8px); }
+
+@keyframes rotate-group {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
         
         .glass-card { background: var(--card-bg); backdrop-filter: blur(20px); border: 1px solid var(--border-color); border-radius: 24px; padding: 25px; margin: 20px; box-shadow: 0 8px 32px 0 rgba(0,0,0,0.37); }
         .tab-content { display: none; }
@@ -30,12 +72,6 @@
         input[type=checkbox]:checked { background: var(--accent); }
         input[type=checkbox]::before { content: ''; position: absolute; width: 21px; height: 21px; background: white; border-radius: 50%; top: 2px; left: 2px; transition: 0.3s; }
         input[type=checkbox]:checked::before { transform: translateX(25px); }
-
-        @media (max-width: 480px) {
-            .calendar-grid { gap: 2px; }
-            .calendar-day { padding: 10px 2px; font-size: 12px; }
-            .glass-card { margin: 10px; padding: 15px; }
-        }
     </style>
 </head>
 <body>
@@ -44,8 +80,8 @@
             <p style="color: var(--accent); font-weight: bold;">NEXT JAMAA'H</p>
             <h1 id="timer">00:00:00</h1>
             <p id="next-prayer-name">
-                <span id="spinner-container"></span> <span id="prayer-text"></span>
-            </p>
+    <span id="spinner-container"></span> <span id="prayer-text"></span>
+</p>
         </div>
         <div id="app" class="glass-card">
             <h3>Today's Prayer Journey</h3>
@@ -55,7 +91,7 @@
 
     <div id="timetable-view" class="tab-content">
         <div class="glass-card">
-            <h3>Loading...</h3>
+            <h3>June 2026</h3>
             <div class="calendar-header">
                 <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
             </div>
@@ -83,11 +119,13 @@
                 <input type="checkbox" id="notify-toggle" onchange="toggleNotifications(this.checked)">
             </div>
             <div class="row">
-                <span><strong>Upload Schedule Image</strong><br>
-                <small>OCR to auto-update sheets</small></span>
-                <input type="file" id="ocr-upload" accept="image/*">
-                <button onclick="handleManualUpload()" style="background: var(--accent); border: none; padding: 10px; border-radius: 8px; cursor: pointer; margin-left: 10px;">Upload Now</button>
-            </div>
+    <span><strong>Upload Schedule Image</strong><br>
+    <small>OCR to auto-update sheets</small></span>
+    <input type="file" id="ocr-upload" accept="image/*">
+    <button onclick="handleManualUpload()" style="background: var(--accent); border: none; padding: 10px; border-radius: 8px; cursor: pointer; margin-left: 10px;">
+        Upload Now
+    </button>
+</div>
         </div>
     </div>
 
@@ -99,41 +137,11 @@
 
     <script>
         const API_URL = 'https://script.google.com/macros/s/AKfycbxZVQfNzONfCldm77yBhkPLeUvPi12D1rAfoYUXhRGX_e25fPBYXr29wAUfvbcqYAPq/exec?action=getData';
-
-        async function initApp() {
-            try {
-                // Initial Spinner Setup
-                const spinnerContainer = document.getElementById('spinner-container');
-                spinnerContainer.innerHTML = `<div style="width:20px;height:20px;border:3px solid var(--accent);border-radius:50%;border-top-color:transparent;animation:spin 1s linear infinite;"></div>`;
-                
-                const res = await fetch(API_URL);
-                const data = await res.json();
-                const rows = data.data;
-
-                // Clear Spinner
-                spinnerContainer.innerHTML = '';
-
-                const today = new Date();
-                const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-                const todayRow = rows.find(r => r[0] === todayStr) || rows[1];
-
-                if (todayRow) {
-                    renderPrayerJourney(todayRow);
-                    await renderDetailedSchedule(todayRow);
-                }
-                
-                generateCalendar(rows);
-                startCountdown(rows, todayRow);
-                setupNotifications(rows);
-                
-                document.getElementById('time-toggle').checked = localStorage.getItem('use24Hour') === 'true';
-                document.getElementById('notify-toggle').checked = localStorage.getItem('notificationsEnabled') === 'true';
-            } catch (err) { 
-                console.error("Init Error:", err);
-                document.getElementById('prayer-text').innerText = "Failed to load.";
-            }
-        }
-
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js')
+    .then(reg => console.log('Service Worker Registered!', reg))
+    .catch(err => console.log('Service Worker Failed!', err));
+}
         function renderPrayerJourney(row) {
             const prayers = [{name: "Fajr", start: row[1], jamat: row[6]}, {name: "Zuhr", start: row[3], jamat: row[7]}, {name: "Asr", start: row[4], jamat: row[8]}, {name: "Maghrib", start: "-", jamat: row[9]}, {name: "Isha", start: row[5], jamat: row[10]}];
             let html = '<div class="row header"><span>Prayer</span><span>Start</span><span>Jamat</span></div>';
@@ -141,88 +149,294 @@
             document.getElementById('prayer-list').innerHTML = html;
         }
 
-        function startCountdown(rows, todayRow) {
-            const jamats = [{n: "Fajr", t: todayRow[6]}, {n: "Zuhr", t: todayRow[7]}, {n: "Asr", t: todayRow[8]}, {n: "Maghrib", t: todayRow[9]}, {n: "Isha", t: todayRow[10]}];
-            let lastActivePrayer = "";
+        function setupNotifications(rows) {
+    // 1. Get today's prayer times from the 30th row (or current day)
+    const todayRow = rows[30];
+    const prayerMap = [
+        { name: "Fajr", time: todayRow[6] },
+        { name: "Zuhr", time: todayRow[7] },
+        { name: "Asr", time: todayRow[8] },
+        { name: "Maghrib", time: todayRow[9] },
+        { name: "Isha", time: todayRow[10] }
+    ];
+    
+    prayerMap.forEach(p => {
+        if (!p.time || p.time === "-") return;
+        
+        const [h, m] = p.time.split(':').map(Number);
+        const now = new Date();
+        
+        // Define the 15-minute window
+        let alarm = new Date();
+        alarm.setHours(h, m - 15, 0, 0);
+        
+        let jamatTime = new Date();
+        jamatTime.setHours(h, m, 0, 0);
 
-            setInterval(() => {
-                const now = new Date();
-                const next = jamats.find(j => j.t && j.t !== "-" && new Date().setHours(...j.t.split(':'),0,0) > now);
-                
-                const prayerText = document.getElementById('prayer-text');
-                if (next) {
-                    const diff = new Date().setHours(...next.t.split(':'),0,0) - now;
-                    if (prayerText) {
-                        prayerText.innerText = `Next: ${next.n}`;
-                        document.getElementById('timer').innerText = new Date(diff).toISOString().substr(11, 8);
-                    }
-                    if (lastActivePrayer !== next.n) {
-                        const list = document.getElementById('prayer-list');
-                        list.querySelectorAll('.row').forEach(r => r.classList.remove('active'));
-                        const targetRow = Array.from(list.querySelectorAll('.row')).find(r => r.innerText.includes(next.n));
-                        if (targetRow) targetRow.classList.add('active');
-                        lastActivePrayer = next.n;
-                    }
-                } else if (prayerText) {
-                    prayerText.innerText = "All prayers finished.";
-                    document.getElementById('timer').innerText = "--:--:--";
+        // 2. Logic: Future Notification vs. Catch-up
+        if (alarm > now) {
+            // Future event: Set a timer
+            setTimeout(() => {
+                if (Notification.permission === "granted") {
+                    new Notification("Prayer Reminder", { 
+                        body: `${p.name} Jamat starts in 15 minutes!` 
+                    });
                 }
-            }, 1000);
+            }, alarm - now);
+        } 
+        else if (now >= alarm && now < jamatTime) {
+            // Catch-up: App opened during the 15-minute window
+            if (Notification.permission === "granted") {
+                new Notification("Prayer Reminder", { 
+                    body: `${p.name} Jamat starts soon! (You are in the 15-min window)` 
+                });
+            }
         }
+    });
+}
+   function startCountdown(rows, todayRow) {
+    // Ensure we are using the row found for today
+    const row = todayRow;
+    const jamats = [
+        {n: "Fajr", t: row[6]}, {n: "Zuhr", t: row[7]}, 
+        {n: "Asr", t: row[8]}, {n: "Maghrib", t: row[9]}, {n: "Isha", t: row[10]}
+    ];
+    
+    let lastActivePrayer = "";
 
-        async function renderDetailedSchedule(row) {
-            if (!row || !row[0]) return;
-            const [year, month, day] = row[0].split('-').map(Number);
-            const dateObj = new Date(Date.UTC(year, month - 1, day));
-            const dateStr = `${String(day).padStart(2, '0')}-${String(month).padStart(2, '0')}-${year}`;
-            const headerTitle = dateObj.toLocaleDateString('en-GB', { timeZone: 'UTC', weekday: 'long', day: 'numeric', month: 'short' });
-
-            const container = document.getElementById('salah-details');
-            container.innerHTML = `<h3>${headerTitle} | <span style="color:var(--accent);">Loading Hijri...</span></h3><div class="row header"><span>Salah</span><span>Start</span><span>Jamat</span></div><div class="row"><span>Fajr</span><span>${row[1]}</span><span>${row[6]}</span></div><div class="row"><span>Zuhr</span><span>${row[3]}</span><span>${row[7]}</span></div><div class="row"><span>Asr</span><span>${row[4]}</span><span>${row[8]}</span></div><div class="row"><span>Maghrib</span><span>-</span><span>${row[9]}</span></div><div class="row"><span>Isha</span><span>${row[5]}</span><span>${row[10]}</span></div>`;
-
-            try {
-                const res = await fetch(`https://api.aladhan.com/v1/gToH/${dateStr}?calendarMethod=UAQ`);
-                const json = await res.json();
-                const h = json.data.hijri;
-                container.innerHTML = container.innerHTML.replace("Loading Hijri...", `${h.day} ${h.month.en}, ${h.year} AH`);
-            } catch (e) { container.innerHTML = container.innerHTML.replace("Loading Hijri...", "Unavailable"); }
-        }
-
-        function generateCalendar(rows) {
-            const grid = document.getElementById('calendar-grid');
-            grid.innerHTML = '';
-            const [y, m, d] = rows[1][0].split('-').map(Number);
-            const firstDate = new Date(Date.UTC(y, m - 1, d));
-            document.querySelector('#timetable-view h3').innerText = firstDate.toLocaleString('default', { timeZone: 'UTC', month: 'long', year: 'numeric' });
+    setInterval(() => {
+        const now = new Date();
+        // Find next jamat that hasn't happened yet today
+        const next = jamats.find(j => j.t && j.t !== "-" && new Date().setHours(...j.t.split(':'),0,0) > now);
+        
+        if (next) {
+            const diff = new Date().setHours(...next.t.split(':'),0,0) - now;
             
-            const offset = (firstDate.getUTCDay() === 0) ? 6 : firstDate.getUTCDay() - 1;
-            for (let i = 0; i < offset; i++) grid.appendChild(document.createElement('div'));
+            // Update the UI via the specific span
+            const prayerText = document.getElementById('prayer-text');
+            if (prayerText) {
+                prayerText.innerText = `Next: ${next.n}`;
+                document.getElementById('timer').innerText = new Date(diff).toISOString().substr(11, 8);
+            }
+            
+            // Highlight the row in the prayer-list
+            if (lastActivePrayer !== next.n) {
+                document.querySelectorAll('.row').forEach(r => r.classList.remove('active'));
+                const prayerRows = document.getElementById('prayer-list').querySelectorAll('.row');
+                const targetRow = Array.from(prayerRows).find(r => r.innerText.includes(next.n));
+                if (targetRow) targetRow.classList.add('active');
+                
+                lastActivePrayer = next.n;
+            }
+        } else {
+            document.getElementById('prayer-text').innerText = "All prayers finished for today.";
+            document.getElementById('timer').innerText = "--:--:--";
+        }
+    }, 1000);
+}
+        function generateCalendar(rows) {
+    const grid = document.getElementById('calendar-grid');
+    grid.innerHTML = '';
+    
+    // Parse first row date as UTC to get accurate month name
+    const [y, m, d] = rows[1][0].split('-').map(Number);
+    const firstDate = new Date(Date.UTC(y, m - 1, d));
+    
+    const monthName = firstDate.toLocaleString('default', { timeZone: 'UTC', month: 'long', year: 'numeric' });
+    document.querySelector('#timetable-view h3').innerText = monthName;
+    
+    // Calculate start day (using UTC getUTCDay)
+    const dayOfWeek = firstDate.getUTCDay(); // 0 (Sun) to 6 (Sat)
+    const offset = (dayOfWeek === 0) ? 6 : dayOfWeek - 1; // Adjust so Mon=0, Sun=6
+    
+    for (let i = 0; i < offset; i++) grid.appendChild(document.createElement('div'));
 
-            rows.forEach((row, idx) => {
-                if (idx === 0 || !row[0]) return;
-                const d = document.createElement('div');
-                d.className = 'calendar-day';
-                d.innerHTML = `<strong>${idx}</strong>`;
-                if (idx === new Date().getDate()) d.classList.add('selected');
-                d.onclick = () => {
-                    document.querySelectorAll('.calendar-day').forEach(el => el.classList.remove('selected'));
-                    d.classList.add('selected');
-                    renderDetailedSchedule(row);
-                };
-                grid.appendChild(d);
+    rows.forEach((row, idx) => {
+        if (idx === 0 || !row[0]) return;
+        
+        const dayDiv = document.createElement('div');
+        dayDiv.className = 'calendar-day';
+        dayDiv.innerHTML = `<strong>${idx}</strong>`;
+        
+        // Highlight today
+        const today = new Date();
+        if (idx === today.getDate() && firstDate.getUTCMonth() === today.getMonth()) {
+            dayDiv.classList.add('selected');
+        }
+
+        dayDiv.onclick = () => {
+            document.querySelectorAll('.calendar-day').forEach(d => d.classList.remove('selected'));
+            dayDiv.classList.add('selected');
+            renderDetailedSchedule(row);
+        };
+        grid.appendChild(dayDiv);
+    });
+}
+      async function renderDetailedSchedule(row) {
+    if (!row || !row[0]) return;
+
+    // Force UTC parsing: row[0] is assumed to be "YYYY-MM-DD"
+    const [year, month, day] = row[0].split('-').map(Number);
+    const dateObj = new Date(Date.UTC(year, month - 1, day));
+    
+    // Format for AlAdhan API: DD-MM-YYYY
+    const dateStr = `${String(day).padStart(2, '0')}-${String(month).padStart(2, '0')}-${year}`;
+
+    // Display title using UTC date
+    const headerTitle = dateObj.toLocaleDateString('en-GB', { 
+        timeZone: 'UTC', 
+        weekday: 'long', 
+        day: 'numeric', 
+        month: 'short' 
+    });
+
+    // Initial state: Show "Loading..."
+    const container = document.getElementById('salah-details');
+    container.innerHTML = `
+        <h3>${headerTitle} | <span style="color:var(--accent);">Loading Hijri...</span></h3>
+        <div class="row header"><span>Salah</span><span>Start</span><span>Jamat</span></div>
+        <div class="row"><span>Fajr</span><span>${row[1]}</span><span>${row[6]}</span></div>
+        <div class="row"><span>Zuhr</span><span>${row[3]}</span><span>${row[7]}</span></div>
+        <div class="row"><span>Asr</span><span>${row[4]}</span><span>${row[8]}</span></div>
+        <div class="row"><span>Maghrib</span><span>-</span><span>${row[9]}</span></div>
+        <div class="row"><span>Isha</span><span>${row[5]}</span><span>${row[10]}</span></div>
+    `;
+
+    try {
+        const response = await fetch(`https://api.aladhan.com/v1/gToH/${dateStr}?calendarMethod=UAQ`);
+        const json = await response.json();
+        const hijri = json.data.hijri;
+        const hijriDateStr = `${hijri.day} ${hijri.month.en}, ${hijri.year} AH`;
+
+        // Update the header with the actual fetched Hijri date
+        container.innerHTML = `
+            <h3>${headerTitle} | <span style="color:var(--accent);">${hijriDateStr}</span></h3>
+            <div class="row header"><span>Salah</span><span>Start</span><span>Jamat</span></div>
+            <div class="row"><span>Fajr</span><span>${row[1]}</span><span>${row[6]}</span></div>
+            <div class="row"><span>Zuhr</span><span>${row[3]}</span><span>${row[7]}</span></div>
+            <div class="row"><span>Asr</span><span>${row[4]}</span><span>${row[8]}</span></div>
+            <div class="row"><span>Maghrib</span><span>-</span><span>${row[9]}</span></div>
+            <div class="row"><span>Isha</span><span>${row[5]}</span><span>${row[10]}</span></div>
+        `;
+    } catch (err) {
+        console.error("Hijri API Error:", err);
+        container.innerHTML = container.innerHTML.replace("Loading Hijri...", "Hijri Unavailable");
+    }
+}
+        async function uploadImage(input) {
+    const file = input.files[0];
+    const reader = new FileReader();
+    
+    reader.onload = async function(e) {
+        const base64 = e.target.result.split(',')[1];
+        
+        // Show loading state
+        alert("Processing image... this may take a moment.");
+
+        const response = await fetch(API_URL + '&action=ocrProcess', {
+            method: 'POST',
+            body: JSON.stringify({ image: base64 })
+        });
+        const result = await response.json();
+        alert(result.message);
+    };
+    reader.readAsDataURL(file);
+}
+       async function handleManualUpload() {
+    const fileInput = document.getElementById('ocr-upload');
+    const file = fileInput.files[0];
+
+    if (!file) {
+        alert("Please select an image first!");
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async function(e) {
+        const base64 = e.target.result.split(',')[1];
+        
+        // Indicate to the user that processing has started
+        const btn = document.querySelector('button');
+        btn.innerText = "Processing...";
+        btn.disabled = true;
+
+        try {
+            // Add this as a separate variable
+const BASE_URL = 'https://script.google.com/macros/s/AKfycbxZVQfNzONfCldm77yBhkPLeUvPi12D1rAfoYUXhRGX_e25fPBYXr29wAUfvbcqYAPq/exec';
+
+// Update handleManualUpload to use BASE_URL, not API_URL
+const response = await fetch(BASE_URL + '?action=ocrProcess', {
+                method: 'POST',
+                body: JSON.stringify({ image: base64 })
             });
+            const result = await response.json();
+            alert(result.message);
+        } catch (err) {
+            console.error(err);
+            alert("Upload failed. Check console.");
+        } finally {
+            btn.innerText = "Upload Now";
+            btn.disabled = false;
+        }
+    };
+    reader.readAsDataURL(file);
+} 
+        function toggleNotifications(enabled) {
+            if (enabled) Notification.requestPermission();
+            localStorage.setItem('notificationsEnabled', enabled);
         }
 
         function showTab(id) {
             document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
             document.getElementById(id + '-view').style.display = 'block';
         }
+async function getHijriDate(dateString) {
+    // dateString format: DD-MM-YYYY
+    const url = `https://api.aladhan.com/v1/gToH/${dateString}?calendarMethod=UAQ`;
+    try {
+        const response = await fetch(url);
+        const json = await response.json();
+        return `${json.data.hijri.day} ${json.data.hijri.month.en}, ${json.data.hijri.year} AH`;
+    } catch (err) {
+        console.error("Hijri API Error:", err);
+        return ""; // Fallback if API fails
+    }
+}
+     async function initApp() {
+    try {        
+        const res = await fetch(API_URL);
+        const data = await res.json();
+        const rows = data.data;
 
-        function toggleNotifications(enabled) {
-            if (enabled) Notification.requestPermission();
-            localStorage.setItem('notificationsEnabled', enabled);
+        // 1. Completely remove spinner and ensure container is empty
+        const prayerEl = document.getElementById('next-prayer-name');
+        prayerEl.innerHTML = '<span id="prayer-text"></span>';
+
+        // 2. Find today's row dynamically (YYYY-MM-DD)
+        const today = new Date();
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        
+        // Match the row where Column A matches today's date string
+        const todayRow = rows.find(r => r[0] === todayStr) || rows[1];
+
+        // 3. Render journey and details using the dynamic todayRow
+        if (todayRow) {
+            renderPrayerJourney(todayRow);
+            await renderDetailedSchedule(todayRow); // Await this to ensure UI is ready
         }
-
+        
+        generateCalendar(rows);
+        startCountdown(rows, todayRow); 
+        setupNotifications(rows);
+        
+        document.getElementById('time-toggle').checked = localStorage.getItem('use24Hour') === 'true';
+        document.getElementById('notify-toggle').checked = localStorage.getItem('notificationsEnabled') === 'true';
+        
+    } catch (err) { 
+        console.error("Initialization Error:", err); 
+        document.getElementById('next-prayer-name').innerText = "Failed to load times.";
+    }
+}
         document.addEventListener('DOMContentLoaded', initApp);
     </script>
 </body>
