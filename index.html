@@ -148,10 +148,15 @@ if ('serviceWorker' in navigator) {
             prayers.forEach(p => html += `<div class="row"><span>${p.name}</span><span>${p.start}</span><span>${p.jamat}</span></div>`);
             document.getElementById('prayer-list').innerHTML = html;
         }
+// Centralized notification state
+let activeAlarms = [];
 
-        function setupNotifications(rows) {
-    // 1. Get today's prayer times from the 30th row (or current day)
-    const todayRow = rows[30];
+function setupNotifications(rows) {
+    // 1. Clear existing alarms before setting new ones
+    activeAlarms.forEach(id => clearTimeout(id));
+    activeAlarms = [];
+
+    const todayRow = rows.find(r => r[0] === new Date().toISOString().split('T')[0]) || rows[1];
     const prayerMap = [
         { name: "Fajr", time: todayRow[6] },
         { name: "Zuhr", time: todayRow[7] },
@@ -160,40 +165,35 @@ if ('serviceWorker' in navigator) {
         { name: "Isha", time: todayRow[10] }
     ];
     
+    const now = new Date();
+    
     prayerMap.forEach(p => {
         if (!p.time || p.time === "-") return;
         
         const [h, m] = p.time.split(':').map(Number);
-        const now = new Date();
+        const alarmTime = new Date();
+        alarmTime.setHours(h, m - 15, 0, 0); // 15 mins before Jamat
         
-        // Define the 15-minute window
-        let alarm = new Date();
-        alarm.setHours(h, m - 15, 0, 0);
-        
-        let jamatTime = new Date();
-        jamatTime.setHours(h, m, 0, 0);
-
-        // 2. Logic: Future Notification vs. Catch-up
-        if (alarm > now) {
-            // Future event: Set a timer
-            setTimeout(() => {
-                if (Notification.permission === "granted") {
-                    new Notification("Prayer Reminder", { 
-                        body: `${p.name} Jamat starts in 15 minutes!` 
-                    });
-                }
-            }, alarm - now);
-        } 
-        else if (now >= alarm && now < jamatTime) {
-            // Catch-up: App opened during the 15-minute window
-            if (Notification.permission === "granted") {
-                new Notification("Prayer Reminder", { 
-                    body: `${p.name} Jamat starts soon! (You are in the 15-min window)` 
-                });
-            }
+        // Only schedule if the alarm is in the future
+        if (alarmTime > now) {
+            const delay = alarmTime - now;
+            const timerId = setTimeout(() => {
+                showPrayerNotification(p.name);
+            }, delay);
+            activeAlarms.push(timerId); // Keep track to clear later
         }
     });
 }
+
+function showPrayerNotification(prayerName) {
+    if (Notification.permission === "granted" && localStorage.getItem('notificationsEnabled') === 'true') {
+        new Notification("Prayer Reminder", { 
+            body: `${prayerName} Jamat starts in 15 minutes!`,
+            icon: '/icon-192.png' // Ensure you have an icon defined
+        });
+    }
+}
+        
    function startCountdown(rows, todayRow) {
     // Ensure we are using the row found for today
     const row = todayRow;
