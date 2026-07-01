@@ -198,37 +198,46 @@ if ('serviceWorker' in navigator) {
         }
     });
 }
-   function startCountdown(rows) {
-    const row = rows[30];
-    const jamats = [{n: "Fajr", t: row[6]}, {n: "Zuhr", t: row[7]}, {n: "Asr", t: row[8]}, {n: "Maghrib", t: row[9]}, {n: "Isha", t: row[10]}];
+   function startCountdown(rows, todayRow) {
+    // Ensure we are using the row found for today
+    const row = todayRow;
+    const jamats = [
+        {n: "Fajr", t: row[6]}, {n: "Zuhr", t: row[7]}, 
+        {n: "Asr", t: row[8]}, {n: "Maghrib", t: row[9]}, {n: "Isha", t: row[10]}
+    ];
     
-    // Store the last highlighted prayer to prevent flashing
     let lastActivePrayer = "";
 
     setInterval(() => {
         const now = new Date();
-        const next = jamats.find(j => j.t !== "-" && new Date().setHours(...j.t.split(':'),0,0) > now);
+        // Find next jamat that hasn't happened yet today
+        const next = jamats.find(j => j.t && j.t !== "-" && new Date().setHours(...j.t.split(':'),0,0) > now);
         
         if (next) {
-           
             const diff = new Date().setHours(...next.t.split(':'),0,0) - now;
-            // Inside startCountdown's setInterval:
-        document.getElementById('prayer-text').innerText = `Next: ${next.n}`;
-            document.getElementById('timer').innerText = new Date(diff).toISOString().substr(11, 8);
             
-            // Only update the UI if the active prayer has actually changed
+            // Update the UI via the specific span
+            const prayerText = document.getElementById('prayer-text');
+            if (prayerText) {
+                prayerText.innerText = `Next: ${next.n}`;
+                document.getElementById('timer').innerText = new Date(diff).toISOString().substr(11, 8);
+            }
+            
+            // Highlight the row in the prayer-list
             if (lastActivePrayer !== next.n) {
                 document.querySelectorAll('.row').forEach(r => r.classList.remove('active'));
-                const rows = document.getElementById('prayer-list').querySelectorAll('.row');
-                const targetRow = Array.from(rows).find(r => r.innerText.includes(next.n));
+                const prayerRows = document.getElementById('prayer-list').querySelectorAll('.row');
+                const targetRow = Array.from(prayerRows).find(r => r.innerText.includes(next.n));
                 if (targetRow) targetRow.classList.add('active');
                 
                 lastActivePrayer = next.n;
             }
+        } else {
+            document.getElementById('prayer-text').innerText = "All prayers finished for today.";
+            document.getElementById('timer').innerText = "--:--:--";
         }
     }, 1000);
 }
-
         function generateCalendar(rows) {
     const grid = document.getElementById('calendar-grid');
     grid.innerHTML = '';
@@ -394,38 +403,37 @@ async function getHijriDate(dateString) {
 }
         async function initApp() {
     try {
-               
+        updateTopDate();
+        
         const res = await fetch(API_URL);
         const data = await res.json();
         const rows = data.data;
 
-        // 1. CLEAR THE SPINNER
-        const spinner = document.getElementById('spinner-container');
-        if (spinner) spinner.remove();
+        // 1. Completely remove the spinner and prepare the container for text
+        const prayerEl = document.getElementById('next-prayer-name');
+        prayerEl.innerHTML = '<span id="prayer-text"></span>';
 
-        // 2. FIND TODAY'S ROW
-        // Format today as YYYY-MM-DD to match your spreadsheet format
+        // 2. Find today's row dynamically based on the current date
         const today = new Date();
         const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-        
-        // Find the row where row[0] matches today's date string
-        const todayRow = rows.find(r => r[0] === todayStr) || rows[1]; // Fallback to rows[1] if not found
+        const todayRow = rows.find(r => r[0] === todayStr) || rows[1];
 
-        // 3. RENDER USING THE DYNAMIC ROW
+        // 3. Render journey and details if data exists
         if (todayRow) {
             renderPrayerJourney(todayRow);
             renderDetailedSchedule(todayRow);
         }
         
         generateCalendar(rows);
-        startCountdown(rows); // Ensure this also uses todayRow if needed
+        startCountdown(rows, todayRow); // Pass todayRow here
         setupNotifications(rows);
         
+        // Restore user settings
         document.getElementById('time-toggle').checked = localStorage.getItem('use24Hour') === 'true';
         document.getElementById('notify-toggle').checked = localStorage.getItem('notificationsEnabled') === 'true';
         
     } catch (err) { 
-        console.error(err); 
+        console.error("Initialization Error:", err); 
         document.getElementById('next-prayer-name').innerText = "Failed to load times.";
     }
 }
