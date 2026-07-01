@@ -80,13 +80,7 @@
             <p style="color: var(--accent); font-weight: bold;">NEXT JAMAA'H</p>
             <h1 id="timer">00:00:00</h1>
             <p id="next-prayer-name">
-    <span id="spinner-container">
-        <div class="dot-spinner">
-            <div></div><div></div><div></div><div></div>
-            <div></div><div></div><div></div><div></div>
-        </div>
-    </span>
-    <span id="prayer-text"></span>
+    <span id="spinner-container"></span> <span id="prayer-text"></span>
 </p>
         </div>
         <div id="app" class="glass-card">
@@ -404,14 +398,21 @@ async function getHijriDate(dateString) {
     }
 }
      async function initApp() {
+
+        // 1. ADD THE SPINNER IMMEDIATELY
+    const spinnerContainer = document.getElementById('spinner-container');
+    spinnerContainer.innerHTML = `
+        <div class="dot-spinner">
+            <div></div><div></div><div></div><div></div>
+            <div></div><div></div><div></div><div></div>
+        </div>`;
+         
     try {
         const res = await fetch(API_URL);
         const data = await res.json();
         const rows = data.data;
 
-        // TARGETED HIDE: This doesn't mess with innerHTML, it just kills the visibility
-        const spinner = document.getElementById('spinner-container');
-        if (spinner) spinner.classList.add('hidden');
+        spinnerContainer.innerHTML = '';
 
         // 2. Proceed with rendering
         if (rows[30] && rows[30][0]) {
@@ -434,6 +435,7 @@ async function getHijriDate(dateString) {
         
     } catch (err) { 
         console.error(err); 
+        spinnerContainer.innerHTML = ''; // Clear spinner on error too
         document.getElementById('next-prayer-name').innerText = "Failed to load times.";
     }
 
